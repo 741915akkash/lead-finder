@@ -14,6 +14,8 @@ async function updateScore(id, result) {
     })
     .eq('id', id);
 
+  console.log('in ollama-scorer/db/update-score.js updating for post id:', id);
+
   if (error) throw error;
 }
 

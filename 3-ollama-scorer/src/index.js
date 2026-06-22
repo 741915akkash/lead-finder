@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { enqueueJob, JOB_TYPES } = require('@leadfinder/job-queue');
+const { enqueueJob, JOB_TYPES } = require('ollama-queue');
 
 const repository = require('./repositories/job-repository');
 

@@ -1,4 +1,4 @@
-const { supabase } = require('./supabase');
+const { supabase } = require('./db');
 
 async function getPostById(postId) {
   const { data, error } = await supabase.from('reddit_posts').select('*').eq('id', postId).single();

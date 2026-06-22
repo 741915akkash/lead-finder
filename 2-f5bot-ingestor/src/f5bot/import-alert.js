@@ -15,6 +15,14 @@ async function importAlert(lead) {
 
       body: lead.body,
 
+      status: 'new',
+
+      score: null,
+
+      score_reason: null,
+
+      scored_at: null,
+
       author: `/u/${lead.author}`,
 
       url: lead.url,
