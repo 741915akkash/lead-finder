@@ -1,0 +1,59 @@
+
+==================================================
+src/files/enqueue-job.js
+==================================================
+const { validateJob } = require('./validate-job');
+
+async function enqueueJob(repository, { jobType, payload, priority = 50 }) {
+  validateJob({
+    jobType,
+    payload,
+    priority,
+  });
+
+  return repository.insert({
+    job_type: jobType,
+    payload,
+    priority,
+    status: 'pending',
+  });
+}
+
+module.exports = {
+  enqueueJob,
+};
+
+
+==================================================
+src/files/validate-job.js
+==================================================
+function validateJob({ jobType, payload, priority }) {
+  if (!jobType) {
+    throw new Error('jobType required');
+  }
+
+  if (payload === undefined) {
+    throw new Error('payload required');
+  }
+
+  if (priority !== undefined && typeof priority !== 'number') {
+    throw new Error('priority must be number');
+  }
+}
+
+module.exports = {
+  validateJob,
+};
+
+
+==================================================
+src/index.js
+==================================================
+const { enqueueJob } = require('./files/enqueue-job');
+const { JOB_TYPES } = require('./files/constants');
+
+module.exports = {
+  enqueueJob,
+  JOB_TYPES,
+};
+
