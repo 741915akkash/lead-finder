@@ -24,6 +24,7 @@ async function claimNextJob() {
     })
     .eq('id', job.id);
 
+  console.log('Claimed job:', job.id);
   return job;
 }
 

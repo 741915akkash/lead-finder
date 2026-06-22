@@ -1,0 +1,247 @@
+
+==================================================
+src/repositories/jobs-repository.js
+==================================================
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+async function claimNextJob() {
+  const { data } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('status', 'pending')
+    .order('priority')
+    .order('created_at')
+    .limit(1);
+
+  if (!data.length) {
+    return null;
+  }
+
+  const job = data[0];
+
+  await supabase
+    .from('jobs')
+    .update({
+      status: 'processing',
+    })
+    .eq('id', job.id);
+
+  return job;
+}
+
+async function completeJob(id, result) {
+  await supabase
+    .from('jobs')
+    .update({
+      status: 'completed',
+      result,
+    })
+    .eq('id', id);
+}
+
+async function failJob(id, error) {
+  await supabase
+    .from('jobs')
+    .update({
+      status: 'failed',
+      error,
+    })
+    .eq('id', id);
+}
+
+module.exports = {
+  claimNextJob,
+  completeJob,
+  failJob,
+};
+
+
+==================================================
+src/queue/claim-job.js
+==================================================
+const { claimNextJob } = require('../repositories/jobs-repository');
+
+module.exports = {
+  claimJob: claimNextJob,
+};
+
+
+==================================================
+src/queue/fail-job.js
+==================================================
+const { failJob } = require('../repositories/jobs-repository');
+
+module.exports = {
+  failJob,
+};
+
+
+==================================================
+src/queue/complete-job.js
+==================================================
+const { completeJob } = require('../repositories/jobs-repository');
+
+module.exports = {
+  completeJob,
+};
+
+
+==================================================
+src/dispatcher/dispatch-job.js
+==================================================
+const scorePost = require('../handlers/score-post');
+
+const postAnalysis = require('../handlers/post-analysis');
+
+const keywordAnalysis = require('../handlers/keyword-analysis');
+
+const subredditAnalysis = require('../handlers/subreddit-analysis');
+
+const painAnalysis = require('../handlers/pain-analysis');
+
+const icpAnalysis = require('../handlers/icp-analysis');
+
+async function dispatchJob(job) {
+  switch (job.job_type) {
+    case 'score_post':
+      return scorePost(job);
+
+    case 'post_analysis':
+      return postAnalysis(job);
+
+    case 'keyword_analysis':
+      return keywordAnalysis(job);
+
+    case 'subreddit_analysis':
+      return subredditAnalysis(job);
+
+    case 'pain_analysis':
+      return painAnalysis(job);
+
+    case 'icp_analysis':
+      return icpAnalysis(job);
+
+    default:
+      throw new Error(`Unknown job type ${job.job_type}`);
+  }
+}
+
+module.exports = {
+  dispatchJob,
+};
+
+
+==================================================
+src/handlers/score-post.js
+==================================================
+const { scorePost } = require('../../../ollama-scorer/src/jobs/score-post');
+
+module.exports = async function (job) {
+  return scorePost(job.payload.postId);
+};
+
+
+==================================================
+src/handlers/subreddit-analysis.js
+==================================================
+module.exports = async function subredditAnalysis(job) {
+  console.log('subreddit analysis');
+
+  return {
+    success: true,
+  };
+};
+
+
+==================================================
+src/handlers/post-analysis.js
+==================================================
+// handlers/post-analysis.js
+
+const { runPostAnalysis } = require('../../../4-analyzer/src/jobs/run-post-analysis');
+
+module.exports = async function () {
+  return runPostAnalysis();
+};
+
+
+==================================================
+src/handlers/keyword-analysis.js
+==================================================
+module.exports = async function keywordAnalysis(job) {
+  console.log('keyword analysis');
+
+  return {
+    success: true,
+  };
+};
+
+
+==================================================
+src/handlers/icp-analysis.js
+==================================================
+module.exports = async function icpAnalysis(job) {
+  console.log('icp analysis');
+
+  return {
+    success: true,
+  };
+};
+
+
+==================================================
+src/handlers/pain-analysis.js
+==================================================
+module.exports = async function painAnalysis(job) {
+  console.log('pain analysis');
+
+  return {
+    success: true,
+  };
+};
+
+
+==================================================
+src/index.js
+==================================================
+require('dotenv').config();
+
+const { claimJob } = require('./queue/claim-job');
+const { completeJob } = require('./queue/complete-job');
+const { failJob } = require('./queue/fail-job');
+
+const { dispatchJob } = require('./dispatcher/dispatch-job');
+
+async function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function main() {
+  while (true) {
+    const job = await claimJob();
+
+    if (!job) {
+      await sleep(5000);
+      continue;
+    }
+
+    try {
+      console.log(`Processing ${job.job_type}`);
+
+      const result = await dispatchJob(job);
+
+      await completeJob(job.id, result);
+    } catch (err) {
+      console.error(err);
+
+      await failJob(job.id, err.message);
+    }
+  }
+}
+
+main().catch(console.error);
+

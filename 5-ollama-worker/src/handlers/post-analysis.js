@@ -1,7 +1,7 @@
-// handlers/post-analysis.js
+// // handlers/post-analysis.js
 
-const { runPostAnalysis } = require('../../../4-analyzer/src/jobs/run-post-analysis');
+// const { runPostAnalysis } = require('../../../4-analyzer/src/jobs/run-post-analysis');
 
-module.exports = async function () {
-  return runPostAnalysis();
-};
+// module.exports = async function () {
+//   return runPostAnalysis();
+// };
