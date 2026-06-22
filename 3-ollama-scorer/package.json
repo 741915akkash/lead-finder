@@ -1,0 +1,22 @@
+{
+  "name": "reddit-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ollama": "ollama serve",
+    "score": "node src/index.js",
+    "test:ollama": "node src/test/test-ollama.js",
+    "test:score": "node src/test/test-score.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "axios": "^1.18.0",
+    "dotenv": "^17.4.2",
+    "ollama-queue": "file:../shared-libs/ollama-queue",
+    "pg": "^8.21.0"
+  }
+}

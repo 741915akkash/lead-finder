@@ -1,0 +1,114 @@
+CRON
+ │
+ ▼
+
+ollama-scorer/index.js
+
+ │
+ ▼
+
+getUnscoredPosts()
+
+ │
+ ▼
+
+posts[]
+
+ │
+ ▼
+
+for each post
+
+ │
+ ▼
+
+enqueueJob(
+  score_post,
+  {
+    postId: post.id
+  }
+)
+
+ │
+ ▼
+
+jobs table
+
+────────────────────────────────────────
+
+Worker loop running forever
+
+────────────────────────────────────────
+
+ │
+ ▼
+
+claimJob()
+
+ │
+ ▼
+
+{
+  job_type: "score_post",
+  payload: {
+    postId: 123
+  }
+}
+
+ │
+ ▼
+
+dispatchJob()
+
+ │
+ ▼
+
+handlers/score-post.js
+
+ │
+ ▼
+
+ollama-scorer/jobs/score-post.js
+
+ │
+ ▼
+
+getPostById(postId)
+
+ │
+ ▼
+
+scoreLead(post)
+
+ │
+ ▼
+
+Ollama
+
+ │
+ ▼
+
+{
+  score: 82,
+  reason: "..."
+}
+
+ │
+ ▼
+
+updateScore()
+
+ │
+ ▼
+
+posts table updated
+
+ │
+ ▼
+
+completeJob()
+
+ │
+ ▼
+
+jobs.status = completed
