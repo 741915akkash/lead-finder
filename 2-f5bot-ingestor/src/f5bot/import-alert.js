@@ -13,6 +13,8 @@ async function importAlert(lead) {
 
       title: lead.title,
 
+      body: lead.body,
+
       author: `/u/${lead.author}`,
 
       url: lead.url,

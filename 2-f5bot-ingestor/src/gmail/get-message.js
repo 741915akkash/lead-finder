@@ -2,7 +2,6 @@ const fs = require('fs');
 const { google } = require('googleapis');
 
 const credentials = JSON.parse(fs.readFileSync('credentials.json'));
-
 const token = JSON.parse(fs.readFileSync('token.json'));
 
 const { client_id, client_secret, redirect_uris } = credentials.installed;
@@ -20,6 +19,21 @@ function decode(base64) {
   return Buffer.from(base64.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
 }
 
+function findPart(part, mimeType) {
+  if (!part) return null;
+
+  if (part.mimeType === mimeType && part.body?.data) {
+    return part;
+  }
+
+  for (const child of part.parts || []) {
+    const found = findPart(child, mimeType);
+    if (found) return found;
+  }
+
+  return null;
+}
+
 async function getMessage(id) {
   const result = await gmail.users.messages.get({
     userId: 'me',
@@ -29,17 +43,22 @@ async function getMessage(id) {
 
   const message = result.data;
 
-  const textPart = message.payload.parts?.find((p) => p.mimeType === 'text/plain');
+  const subject = message.payload.headers?.find((h) => h.name === 'Subject')?.value || '';
+  const textPart = findPart(message.payload, 'text/plain');
+  const htmlPart = findPart(message.payload, 'text/html');
 
-  const body = textPart ? decode(textPart.body.data) : '';
+  const textBody = textPart ? decode(textPart.body.data) : '';
+  const htmlBody = htmlPart ? decode(htmlPart.body.data) : '';
 
-  const urls = body.match(/https:\/\/f5bot\.com\/url\?[^\s]+/g) || [];
+  const body = htmlBody || textBody;
 
   return {
     id: message.id,
     threadId: message.threadId,
+    subject,
     body,
-    urls,
+    htmlBody,
+    textBody,
   };
 }
 

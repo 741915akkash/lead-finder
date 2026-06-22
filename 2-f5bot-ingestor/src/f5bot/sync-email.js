@@ -6,6 +6,8 @@ const { importAlert } = require('./import-alert');
 const { isEmailProcessed } = require('./is-email-processed');
 const { markEmailProcessed } = require('./mark-email-processed');
 
+const TARGET_PHRASE = 'f5bot found something';
+
 async function syncEmail(messageId) {
   const processed = await isEmailProcessed(messageId);
 
@@ -17,7 +19,12 @@ async function syncEmail(messageId) {
 
   const message = await getMessage(messageId);
 
-  const alerts = parseEmail(message.body, message.urls);
+  if (!message.subject.toLowerCase().includes(TARGET_PHRASE)) {
+    console.log(`Skipping unrelated email: ${messageId}`);
+    return 0;
+  }
+
+  const alerts = parseEmail(message.body);
 
   for (const alert of alerts) {
     await importAlert(alert);
