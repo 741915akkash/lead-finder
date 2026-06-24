@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'ollama-worker',
+      name: 'clean-up-service',
       script: './src/index.js',
       autorestart: true,
       max_restarts: 10,

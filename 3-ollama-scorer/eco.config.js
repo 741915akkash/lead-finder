@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'ollama-worker',
+      name: 'ollama-scorer',
       script: './src/index.js',
       autorestart: true,
       max_restarts: 10,

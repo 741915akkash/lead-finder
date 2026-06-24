@@ -1,8 +1,13 @@
 require('dotenv').config();
 
 const { fetchEmails } = require('./gmail/fetch-emails');
-
 const { syncEmail } = require('./f5bot/sync-email');
+
+async function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 async function run() {
   const emails = await fetchEmails();
@@ -17,7 +22,20 @@ async function run() {
     }
   }
 
-  process.exit(0);
+  console.log('F5Bot sync completed');
 }
 
-run();
+async function main() {
+  while (true) {
+    try {
+      await run();
+    } catch (err) {
+      console.error('F5Bot ingestor failed:', err);
+    }
+
+    console.log('Sleeping for 15 minutes...');
+    await sleep(15 * 60 * 1000);
+  }
+}
+
+main().catch(console.error);

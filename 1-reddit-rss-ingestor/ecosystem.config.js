@@ -3,8 +3,9 @@ module.exports = {
     {
       name: 'rss-ingestor',
       script: './src/index.js',
-      cron_restart: '*/15 * * * *',
-      autorestart: false,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 5000,
     },
   ],
 };

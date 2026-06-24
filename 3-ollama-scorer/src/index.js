@@ -3,8 +3,13 @@ require('dotenv').config();
 const { enqueueJob, JOB_TYPES } = require('ollama-queue');
 
 const repository = require('./repositories/job-repository');
-
 const { getUnscoredPosts } = require('./db/get-unscored-posts');
+
+async function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 async function run() {
   console.log('Loading posts...');
@@ -19,11 +24,9 @@ async function run() {
     try {
       await enqueueJob(repository, {
         jobType: JOB_TYPES.SCORE_POST,
-
         payload: {
           postId: post.id,
         },
-
         priority: 10,
       });
 
@@ -36,8 +39,19 @@ async function run() {
   }
 
   console.log(`Queued ${queued} jobs`);
-
-  console.log('Done');
 }
 
-run().catch(console.error);
+async function main() {
+  while (true) {
+    try {
+      await run();
+    } catch (err) {
+      console.error('Scorer failed:', err);
+    }
+
+    console.log('Sleeping for 15 minutes...');
+    await sleep(15 * 60 * 1000);
+  }
+}
+
+main().catch(console.error);
