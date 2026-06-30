@@ -11,6 +11,8 @@ export default defineEventHandler(async () => {
     supabase.from('reddit_posts').select('source').not('source', 'is', null),
 
     supabase.from('reddit_posts').select('status').not('status', 'is', null),
+
+    
   ]);
 
   return {

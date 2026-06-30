@@ -1,8 +1,4 @@
 <script setup>
-// const { data, pending, error } = await useFetch(
-//   'http://localhost:3000/api/posts?page=1&pageSize=50'
-// )
-
 const search = ref('');
 const keyword = ref('');
 const subreddit = ref('');
@@ -13,6 +9,8 @@ const pageSize = ref(50);
 
 const sort = ref('score');
 const order = ref('desc');
+
+const days = ref(7);
 
 const { data: filters } = await useFetch('/api/filters');
 
@@ -28,6 +26,8 @@ const { data, pending } = await useFetch('/api/posts', {
     keyword,
     subreddit,
     source,
+
+    days,
   },
 });
 
@@ -40,8 +40,13 @@ function handleSort(column) {
   }
 }
 
+watch([search, keyword, subreddit, source, days], () => {
+  page.value = 1;
+});
+
 import DataTable from '~/components/table/DataTable.vue';
 import TableFilters from '~/components/table/TableFilters.vue';
+import Pagination from '~/components/table/Pagination.vue';
 </script>
 
 <template>
@@ -54,9 +59,12 @@ import TableFilters from '~/components/table/TableFilters.vue';
         v-model:search="search"
         v-model:keyword="keyword"
         v-model:subreddit="subreddit"
-        v-model:source="source" />
+        v-model:source="source"
+        v-model:days="days" />
 
+      <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
       <DataTable :rows="data?.rows || []" :loading="pending" :sort="sort" :order="order" @sort="handleSort" />
+      <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
 
       <div v-if="error" class="mt-4 text-red-600">
         {{ error }}

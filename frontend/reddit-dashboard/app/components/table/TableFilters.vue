@@ -4,6 +4,7 @@ const keyword = defineModel('keyword');
 const subreddit = defineModel('subreddit');
 const source = defineModel('source');
 const status = defineModel('status');
+const days = defineModel('days');
 defineProps({
   filters: Object,
 });
@@ -13,7 +14,7 @@ defineProps({
   <div class="mb-6 flex flex-wrap gap-3">
     <input v-model="search" placeholder="Search title..." class="rounded-lg border px-3 py-2" />
 
-    <select v-model="keyword" class="rounded-lg border px-3 py-2">
+    <select v-model="keyword">
       <option value="">All Keywords</option>
 
       <option v-for="item in filters?.keywords" :key="item" :value="item">
@@ -36,5 +37,9 @@ defineProps({
         {{ item }}
       </option>
     </select>
+    <label class="flex flex-col gap-1">
+
+      <input v-model.number="days" placeholder="upto 7 days old" type="number" min="1" class="rounded border p-1" />
+    </label>
   </div>
 </template>

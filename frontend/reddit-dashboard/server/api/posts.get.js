@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
   const source = query.source || '';
   const status = query.status || '';
 
+  const days = Number(query.days);
+
   const page = Number(query.page || 1);
   const pageSize = Number(query.pageSize || 50);
 
@@ -18,6 +20,9 @@ export default defineEventHandler(async (event) => {
 
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
 
   const supabase = getSupabase();
 
@@ -39,7 +44,8 @@ export default defineEventHandler(async (event) => {
         count: 'exact',
       },
     )
-    .gt('score', 0);
+    .gt('score', 0)
+    .gte('published_at', cutoff.toISOString());
 
   if (search) {
     db = db.ilike('title', `%${search}%`);
@@ -85,6 +91,8 @@ export default defineEventHandler(async (event) => {
     page,
     pageSize,
     total: count,
+    totalPages: Math.ceil(count / pageSize),
     rows: rows,
+    days: days,
   };
 });
