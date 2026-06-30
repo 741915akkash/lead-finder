@@ -26,7 +26,7 @@ function formatDate(date) {
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-xl border bg-white shadow-sm">
+  <div class="overflow-x-auto rounded-xl border bg-white shadow-sm">
     <table class="min-w-full">
       <thead class="bg-gray-50">
         <tr>
