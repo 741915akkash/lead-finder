@@ -268,9 +268,9 @@ async function startClipboardWatcher() {
   try {
     lastClipboard = await clipboard.read();
   } catch (err) {
-    console.error('Unable to read clipboard:', err.message);
+    console.error('Unable to read clipboard at startup. Will retry during polling:', err.message);
 
-    process.exit(1);
+    lastClipboard = '';
   }
 
   console.log('======================================');
@@ -308,4 +308,3 @@ async function startClipboardWatcher() {
 module.exports = {
   startClipboardWatcher,
 };
-

@@ -3,7 +3,7 @@ function resolvePostedAt(postedAtRaw, discoveredAt) {
     return null;
   }
 
-  const raw = postedAtRaw.trim().toLowerCase();
+  const raw = postedAtRaw.trim().replace(/^posted\s+/i, '').toLowerCase();
 
   if (!discoveredAt) {
     throw new Error('discoveredAt is required to resolve posted_at');
