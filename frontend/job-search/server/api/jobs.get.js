@@ -4,13 +4,17 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event);
 
   const search = query.search || '';
+
   const source = query.source || '';
+
   const status = query.status || '';
+
   const recommendation = query.recommendation || '';
 
   const days = Number(query.days || 30);
 
   const page = Number(query.page || 1);
+
   const pageSize = Number(query.pageSize || 50);
 
   const allowedSorts = ['fit_score', 'priority_score', 'posted_at'];
@@ -20,9 +24,11 @@ export default defineEventHandler(async (event) => {
   const order = query.order === 'asc' ? 'asc' : 'desc';
 
   const from = (page - 1) * pageSize;
+
   const to = from + pageSize - 1;
 
   const cutoff = new Date();
+
   cutoff.setDate(cutoff.getDate() - days);
 
   const supabase = getSupabase();
@@ -31,18 +37,19 @@ export default defineEventHandler(async (event) => {
     .from('job_postings')
     .select(
       `
-      id,
-      title,
-      company,
-      location,
-      url,
-      source,
-      status,
-      posted_at,
-      fit_score,
-      priority_score,
-      recommendation
-      `,
+          id,
+          title,
+          company,
+          location,
+          url,
+          apply_url,
+          source,
+          status,
+          posted_at,
+          fit_score,
+          priority_score,
+          recommendation
+          `,
       {
         count: 'exact',
       },
@@ -79,12 +86,56 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  const jobs = data || [];
+
+  const jobIds = jobs.map((job) => job.id);
+
+  let applications = [];
+
+  if (jobIds.length) {
+    const { data: applicationData, error: applicationError } = await supabase
+      .from('applications')
+      .select(
+        `
+            id,
+            job_posting_id,
+            crm_lead_id,
+            crm_quiz_id,
+            status,
+            applied_at,
+            application_url,
+            resume_version,
+            notes,
+            created_at,
+            updated_at
+            `,
+      )
+      .in('job_posting_id', jobIds);
+
+    if (applicationError) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: applicationError.message,
+      });
+    }
+
+    applications = applicationData || [];
+  }
+
+  const applicationsByJobId = new Map(applications.map((application) => [application.job_posting_id, application]));
+
+  const rows = jobs.map((job) => ({
+    ...job,
+
+    application: applicationsByJobId.get(job.id) || null,
+  }));
+
   return {
     page,
     pageSize,
     total: count,
     totalPages: Math.ceil(count / pageSize),
-    rows: data || [],
+    rows,
     days,
   };
 });

@@ -1,20 +1,29 @@
 <script setup>
+import DataTable from '~/components/table/DataTable.vue';
+import TableFilters from '~/components/table/TableFilters.vue';
+import Pagination from '~/components/table/Pagination.vue';
+
 const search = ref('');
+
 const source = ref('');
+
 const status = ref('');
+
 const recommendation = ref('');
 
 const page = ref(1);
+
 const pageSize = ref(50);
 
 const sort = ref('fit_score');
+
 const order = ref('desc');
 
 const days = ref(30);
 
 const { data: filters } = await useFetch('/api/filters');
 
-const { data, pending, error } = await useFetch('/api/jobs', {
+const { data, pending, error, refresh } = await useFetch('/api/jobs', {
   query: {
     page,
     pageSize,
@@ -33,6 +42,7 @@ function handleSort(column) {
     order.value = order.value === 'asc' ? 'desc' : 'asc';
   } else {
     sort.value = column;
+
     order.value = 'desc';
   }
 }
@@ -41,9 +51,9 @@ watch([search, source, status, recommendation, days], () => {
   page.value = 1;
 });
 
-import DataTable from '~/components/table/DataTable.vue';
-import TableFilters from '~/components/table/TableFilters.vue';
-import Pagination from '~/components/table/Pagination.vue';
+async function handleApplicationSaved() {
+  await refresh();
+}
 </script>
 
 <template>
@@ -61,12 +71,18 @@ import Pagination from '~/components/table/Pagination.vue';
 
       <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
 
-      <DataTable :rows="data?.rows || []" :loading="pending" :sort="sort" :order="order" @sort="handleSort" />
+      <DataTable
+        :rows="data?.rows || []"
+        :loading="pending"
+        :sort="sort"
+        :order="order"
+        @sort="handleSort"
+        @application-saved="handleApplicationSaved" />
 
       <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
 
       <div v-if="error" class="mt-4 text-red-600">
-        {{ error }}
+        {{ error?.statusMessage || error?.message || 'Failed to load jobs.' }}
       </div>
     </div>
   </main>

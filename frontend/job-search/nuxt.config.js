@@ -12,5 +12,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_KEY,
+
+    // CRM DB — server only
+    crmDatabaseUrl: process.env.CRM_DATABASE_URL,
+    crmQuizId: process.env.CRM_QUIZ_ID,
   },
 });

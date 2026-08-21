@@ -1,4 +1,9 @@
 <script setup>
+import { ref } from 'vue';
+
+import ApplicationModal from '~/components/applications/ApplicationModal.vue';
+import ApplicationStatus from '~/components/applications/ApplicationStatus.vue';
+
 defineProps({
   rows: {
     type: Array,
@@ -20,18 +25,50 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['sort']);
+const emit = defineEmits(['sort', 'application-saved']);
+
+const selectedJob = ref(null);
+
+const selectedApplication = ref(null);
+
+const showApplicationModal = ref(false);
 
 function formatScore(score) {
-  if (score === null || score === undefined) return '-';
+  if (score === null || score === undefined) {
+    return '-';
+  }
 
   return Math.round(score * 100);
 }
 
 function formatDate(date) {
-  if (!date) return '-';
+  if (!date) {
+    return '-';
+  }
 
   return new Date(date).toLocaleDateString();
+}
+
+function openApplication(row) {
+  selectedJob.value = row;
+
+  selectedApplication.value = row.application || null;
+
+  showApplicationModal.value = true;
+}
+
+function closeApplication() {
+  showApplicationModal.value = false;
+
+  selectedJob.value = null;
+
+  selectedApplication.value = null;
+}
+
+function handleSaved(application) {
+  closeApplication();
+
+  emit('application-saved', application);
 }
 </script>
 
@@ -61,6 +98,8 @@ function formatDate(date) {
           <th class="px-4 py-3 text-left text-sm font-semibold">Source</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Recommendation</th>
+
+          <th class="px-4 py-3 text-left text-sm font-semibold">Application</th>
 
           <th
             class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
@@ -107,10 +146,36 @@ function formatDate(date) {
           </td>
 
           <td class="px-4 py-3">
+            <button
+              type="button"
+              class="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
+              @click="openApplication(row)">
+              <ApplicationStatus v-if="row.application" :status="row.application.status" />
+
+              <span v-else> Apply </span>
+            </button>
+          </td>
+
+          <td class="px-4 py-3">
             {{ formatDate(row.posted_at) }}
           </td>
+        </tr>
+
+        <tr v-if="!loading && !rows.length">
+          <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
+        </tr>
+
+        <tr v-if="loading">
+          <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
         </tr>
       </tbody>
     </table>
   </div>
+
+  <ApplicationModal
+    :open="showApplicationModal"
+    :job="selectedJob"
+    :application="selectedApplication"
+    @close="closeApplication"
+    @saved="handleSaved" />
 </template>
