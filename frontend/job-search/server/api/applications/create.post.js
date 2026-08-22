@@ -23,66 +23,31 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  let crmLeadId = null;
-
-  if (body?.crm_lead_id !== null && body?.crm_lead_id !== undefined && body?.crm_lead_id !== '') {
-    crmLeadId = Number(body.crm_lead_id);
-
-    if (!Number.isInteger(crmLeadId)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid crm_lead_id',
-      });
-    }
-  }
-
-  const crmQuizId = body?.crm_quiz_id ? String(body.crm_quiz_id).trim() : null;
-
-  let appliedAt = new Date();
-
-  if (body?.applied_at) {
-    appliedAt = new Date(body.applied_at);
-
-    if (Number.isNaN(appliedAt.getTime())) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid applied_at',
-      });
-    }
-  }
-
-  const applicationUrl = body?.application_url ? String(body.application_url).trim() : null;
-
-  const resumeVersion = body?.resume_version ? String(body.resume_version).trim() : null;
-
-  const notes = body?.notes ? String(body.notes).trim() : null;
-
   const supabase = getSupabase();
 
-  const { data, error } = await supabase
+  /*
+   * Create application first.
+   */
+  const { data: application, error: applicationError } = await supabase
     .from('applications')
     .insert({
       job_posting_id: jobPostingId,
 
-      crm_lead_id: crmLeadId,
-
-      crm_quiz_id: crmQuizId,
-
       status,
 
-      applied_at: appliedAt.toISOString(),
+      applied_at: body?.applied_at ? new Date(body.applied_at).toISOString() : new Date().toISOString(),
 
-      application_url: applicationUrl,
+      application_url: body?.application_url || null,
 
-      resume_version: resumeVersion,
+      resume_version: body?.resume_version || null,
 
-      notes,
+      notes: body?.notes || null,
     })
     .select()
     .single();
 
-  if (error) {
-    if (error.code === '23505') {
+  if (applicationError) {
+    if (applicationError.code === '23505') {
       throw createError({
         statusCode: 409,
         statusMessage: 'An application already exists for this job',
@@ -91,9 +56,43 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: error.message,
+      statusMessage: applicationError.message,
     });
   }
 
-  return data;
+  /*
+   * Then create zero or more
+   * application/contact links.
+   */
+  const contacts = Array.isArray(body?.contacts) ? body.contacts : [];
+
+  if (contacts.length) {
+    const rows = contacts
+      .map((contact) => ({
+        application_id: application.id,
+
+        crm_lead_id: Number(contact.crm_lead_id),
+
+        crm_quiz_id: contact.crm_quiz_id || null,
+      }))
+      .filter((contact) => Number.isInteger(contact.crm_lead_id));
+
+    if (rows.length) {
+      const { error: contactsError } = await supabase.from('application_contacts').insert(rows);
+
+      if (contactsError) {
+        /*
+         * Don't leave a half-created application.
+         */
+        await supabase.from('applications').delete().eq('id', application.id);
+
+        throw createError({
+          statusCode: 500,
+          statusMessage: contactsError.message,
+        });
+      }
+    }
+  }
+
+  return application;
 });

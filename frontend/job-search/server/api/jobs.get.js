@@ -37,18 +37,18 @@ export default defineEventHandler(async (event) => {
     .from('job_postings')
     .select(
       `
-          id,
-          title,
-          company,
-          location,
-          url,
-          apply_url,
-          source,
-          status,
-          posted_at,
-          fit_score,
-          priority_score,
-          recommendation
+            id,
+            title,
+            company,
+            location,
+            url,
+            apply_url,
+            source,
+            status,
+            posted_at,
+            fit_score,
+            priority_score,
+            recommendation
           `,
       {
         count: 'exact',
@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
   const { data, count, error } = await db
     .order(sort, {
       ascending: order === 'asc',
+
       nullsFirst: false,
     })
     .range(from, to);
@@ -97,17 +98,22 @@ export default defineEventHandler(async (event) => {
       .from('applications')
       .select(
         `
-            id,
-            job_posting_id,
-            crm_lead_id,
-            crm_quiz_id,
-            status,
-            applied_at,
-            application_url,
-            resume_version,
-            notes,
-            created_at,
-            updated_at
+              id,
+              job_posting_id,
+              status,
+              applied_at,
+              application_url,
+              resume_version,
+              notes,
+              created_at,
+              updated_at,
+
+              application_contacts (
+                id,
+                crm_lead_id,
+                crm_quiz_id,
+                created_at
+              )
             `,
       )
       .in('job_posting_id', jobIds);
@@ -122,7 +128,48 @@ export default defineEventHandler(async (event) => {
     applications = applicationData || [];
   }
 
-  const applicationsByJobId = new Map(applications.map((application) => [application.job_posting_id, application]));
+  /*
+   * Collect every CRM contact ID
+   * across all applications.
+   */
+  const crmLeadIds = [
+    ...new Set(
+      applications
+        .flatMap((application) => application.application_contacts || [])
+        .map((contact) => contact.crm_lead_id)
+        .filter(Boolean),
+    ),
+  ];
+
+  let crmContacts = [];
+
+  if (crmLeadIds.length) {
+    crmContacts = await $fetch('/api/crm-contacts', {
+      query: {
+        ids: crmLeadIds.join(','),
+      },
+    });
+  }
+
+  const crmContactsById = new Map(crmContacts.map((contact) => [String(contact.id), contact]));
+
+  const applicationsByJobId = new Map(
+    applications.map((application) => {
+      const contacts = (application.application_contacts || [])
+        .map((link) => crmContactsById.get(String(link.crm_lead_id)))
+        .filter(Boolean);
+
+      return [
+        application.job_posting_id,
+
+        {
+          ...application,
+
+          contacts,
+        },
+      ];
+    }),
+  );
 
   const rows = jobs.map((job) => ({
     ...job,
@@ -133,9 +180,12 @@ export default defineEventHandler(async (event) => {
   return {
     page,
     pageSize,
-    total: count,
-    totalPages: Math.ceil(count / pageSize),
+    total: count || 0,
+
+    totalPages: Math.ceil((count || 0) / pageSize),
+
     rows,
+
     days,
   };
 });

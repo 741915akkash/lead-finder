@@ -1,8 +1,9 @@
 import { getCrmPool } from '../utils/crmDb';
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig();
   const query = getQuery(event);
+
+  const config = useRuntimeConfig();
 
   const quizId = String(config.crmQuizId || '').trim();
 
@@ -13,42 +14,88 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const search = String(query.search || '').trim();
-
   const pool = getCrmPool();
 
-  const values = [quizId];
+  const idsParam = String(query.ids || '').trim();
 
-  let searchClause = '';
+  const company = String(query.company || '').trim();
 
-  if (search) {
-    values.push(`%${search}%`);
+  let result;
 
-    searchClause = `
-      AND (
-        name ILIKE $2
-        OR company ILIKE $2
-        OR email ILIKE $2
-      )
-    `;
+  /*
+   * When application contact IDs are supplied,
+   * retrieve exactly those CRM contacts.
+   */
+  if (idsParam) {
+    const ids = idsParam
+      .split(',')
+      .map((id) => Number(id.trim()))
+      .filter((id) => Number.isInteger(id));
+
+    if (!ids.length) {
+      return [];
+    }
+
+    result = await pool.query(
+      `
+          SELECT
+            leads.id,
+            leads.name,
+            leads.company,
+            leads.email,
+            leads.stage_id,
+            pipeline_stages.name AS stage
+
+          FROM leads
+
+          LEFT JOIN pipeline_stages
+            ON pipeline_stages.id =
+               leads.stage_id
+
+          WHERE leads.quiz_id = $1
+            AND leads.id = ANY($2::bigint[])
+
+          ORDER BY leads.name ASC
+          `,
+      [quizId, ids],
+    );
+
+    return result.rows;
   }
 
-  const result = await pool.query(
-    `
-      SELECT
-        id,
-        name,
-        company,
-        email,
-        quiz_id
-      FROM leads
-      WHERE quiz_id = $1
-      ${searchClause}
-      ORDER BY created_at DESC
-      LIMIT 100
-    `,
-    values,
-  );
+  /*
+   * Optional company lookup.
+   * This is useful for the CRM button / future UI.
+   */
+  if (company) {
+    result = await pool.query(
+      `
+          SELECT
+            leads.id,
+            leads.name,
+            leads.company,
+            leads.email,
+            leads.stage_id,
+            pipeline_stages.name AS stage
 
-  return result.rows;
+          FROM leads
+
+          LEFT JOIN pipeline_stages
+            ON pipeline_stages.id =
+               leads.stage_id
+
+          WHERE leads.quiz_id = $1
+            AND leads.company ILIKE $2
+
+          ORDER BY leads.name ASC
+
+          LIMIT 100
+          `,
+      [quizId, `%${company}%`],
+    );
+
+    return result.rows;
+  }
+
+  return [];
 });

@@ -30,12 +30,8 @@ const error = ref('');
 
 const contacts = ref([]);
 
-const contactSearch = ref('');
-
 const form = ref({
   status: 'applied',
-  crm_lead_id: '',
-  crm_quiz_id: '',
   applied_at: '',
   application_url: '',
   resume_version: '',
@@ -43,6 +39,18 @@ const form = ref({
 });
 
 const isEditing = computed(() => !!props.application);
+
+const company = computed(() => props.job?.company || '');
+
+const crmUrl = computed(() => {
+  const base = 'https://www.golaunchscall.com/crm';
+
+  if (!company.value) {
+    return base;
+  }
+
+  return `${base}?search=${encodeURIComponent(company.value)}`;
+});
 
 function toDatetimeLocal(value) {
   if (!value) {
@@ -68,10 +76,6 @@ function resetForm() {
   form.value = {
     status: props.application?.status || 'applied',
 
-    crm_lead_id: props.application?.crm_lead_id ? String(props.application.crm_lead_id) : '',
-
-    crm_quiz_id: props.application?.crm_quiz_id || '',
-
     applied_at: toDatetimeLocal(props.application?.applied_at || new Date()),
 
     application_url: props.application?.application_url || props.job?.apply_url || props.job?.url || '',
@@ -82,22 +86,36 @@ function resetForm() {
   };
 }
 
+function getContactIds() {
+  return (props.application?.application_contacts || []).map((contact) => contact.crm_lead_id).filter(Boolean);
+}
+
 async function loadContacts() {
+  const ids = getContactIds();
+
+  if (!ids.length) {
+    contacts.value = [];
+
+    return;
+  }
+
   loadingContacts.value = true;
 
   try {
     contacts.value = await $fetch('/api/crm-contacts', {
-      query: contactSearch.value
-        ? {
-            search: contactSearch.value,
-          }
-        : {},
+      query: {
+        ids: ids.join(','),
+      },
     });
   } catch (err) {
-    error.value = err?.data?.statusMessage || err?.data?.message || err?.message || 'Could not load CRM contacts.';
+    error.value = err?.data?.statusMessage || err?.message || 'Could not load CRM contacts.';
   } finally {
     loadingContacts.value = false;
   }
+}
+
+function openCrm() {
+  window.open(crmUrl.value, '_blank', 'noopener,noreferrer');
 }
 
 async function save() {
@@ -111,13 +129,7 @@ async function save() {
 
   try {
     const payload = {
-      job_posting_id: props.job.id,
-
       status: form.value.status,
-
-      crm_lead_id: form.value.crm_lead_id || null,
-
-      crm_quiz_id: form.value.crm_quiz_id || null,
 
       applied_at: form.value.applied_at ? new Date(form.value.applied_at).toISOString() : null,
 
@@ -133,6 +145,7 @@ async function save() {
     if (isEditing.value) {
       result = await $fetch('/api/applications/update', {
         method: 'PATCH',
+
         body: {
           id: props.application.id,
 
@@ -142,7 +155,14 @@ async function save() {
     } else {
       result = await $fetch('/api/applications/create', {
         method: 'POST',
-        body: payload,
+
+        body: {
+          job_posting_id: props.job.id,
+
+          ...payload,
+
+          contacts: [],
+        },
       });
     }
 
@@ -163,19 +183,9 @@ watch(
 
     resetForm();
 
-    contactSearch.value = '';
-
     await loadContacts();
   },
 );
-
-watch(contactSearch, async () => {
-  if (!props.open) {
-    return;
-  }
-
-  await loadContacts();
-});
 </script>
 
 <template>
@@ -184,6 +194,8 @@ watch(contactSearch, async () => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     @click.self="emit('close')">
     <div class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl bg-white shadow-xl">
+      <!-- HEADER -->
+
       <div class="flex items-center justify-between border-b px-6 py-4">
         <div>
           <h2 class="text-lg font-semibold text-gray-900">
@@ -206,6 +218,8 @@ watch(contactSearch, async () => {
       </div>
 
       <div class="space-y-5 px-6 py-5">
+        <!-- ERROR -->
+
         <div v-if="error" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ error }}
         </div>
@@ -230,35 +244,59 @@ watch(contactSearch, async () => {
           </div>
         </div>
 
-        <!-- CRM CONTACT -->
+        <!-- CONTACTS -->
 
         <div>
-          <div class="mb-2 flex items-center justify-between">
-            <label class="text-sm font-medium text-gray-700"> CRM contact </label>
+          <div class="mb-3 flex items-center justify-between">
+            <label class="text-sm font-medium text-gray-700"> Contacts </label>
 
-            <span class="text-xs text-gray-400"> Optional </span>
+            <span class="text-xs text-gray-400">
+              {{ contacts.length }}
+              linked
+            </span>
           </div>
 
-          <input
-            v-model="contactSearch"
-            type="text"
-            placeholder="Search recruiter, founder, hiring manager..."
-            class="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          <div v-if="loadingContacts" class="rounded-lg border bg-gray-50 px-4 py-3 text-sm text-gray-500">
+            Loading contacts...
+          </div>
 
-          <select v-model="form.crm_lead_id" class="w-full rounded-lg border border-gray-300 px-3 py-2">
-            <option value="">No contact linked</option>
+          <div v-else-if="contacts.length" class="space-y-2">
+            <div
+              v-for="contact in contacts"
+              :key="contact.id"
+              class="flex items-center justify-between rounded-lg border px-3 py-2">
+              <div class="min-w-0">
+                <div class="truncate text-sm font-medium text-gray-900">
+                  {{ contact.name || 'Unnamed contact' }}
+                </div>
 
-            <option v-for="contact in contacts" :key="contact.id" :value="String(contact.id)">
-              {{ contact.name || 'Unnamed' }}
+                <div class="truncate text-xs text-gray-500">
+                  {{ contact.company || '' }}
 
-              <template v-if="contact.company">
-                —
-                {{ contact.company }}
-              </template>
-            </option>
-          </select>
+                  <span v-if="contact.email">
+                    ·
+                    {{ contact.email }}
+                  </span>
+                </div>
+              </div>
 
-          <p v-if="loadingContacts" class="mt-1 text-xs text-gray-400">Loading contacts...</p>
+              <span class="ml-3 shrink-0 rounded-full border bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700">
+                {{ contact.stage || 'No stage' }}
+              </span>
+            </div>
+          </div>
+
+          <div v-else class="rounded-lg border border-dashed bg-gray-50 px-4 py-4 text-sm text-gray-500">
+            No contacts linked yet.
+          </div>
+
+          <button
+            type="button"
+            class="mt-3 w-full rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50"
+            @click="openCrm">
+            Open CRM
+            <span v-if="company"> — {{ company }} </span>
+          </button>
         </div>
 
         <!-- APPLIED DATE -->
@@ -308,6 +346,8 @@ watch(contactSearch, async () => {
             class="w-full rounded-lg border border-gray-300 px-3 py-2" />
         </div>
       </div>
+
+      <!-- FOOTER -->
 
       <div class="flex justify-end gap-3 border-t px-6 py-4">
         <button type="button" class="rounded-lg border px-4 py-2 text-sm" @click="emit('close')">Cancel</button>

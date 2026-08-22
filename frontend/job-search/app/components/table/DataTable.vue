@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 
 import ApplicationModal from '~/components/applications/ApplicationModal.vue';
-import ApplicationStatus from '~/components/applications/ApplicationStatus.vue';
 
 defineProps({
   rows: {
@@ -150,7 +149,9 @@ function handleSaved(application) {
               type="button"
               class="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
               @click="openApplication(row)">
-              <ApplicationStatus v-if="row.application" :status="row.application.status" />
+              <span v-if="row.application">
+                {{ row.application.status }}
+              </span>
 
               <span v-else> Apply </span>
             </button>

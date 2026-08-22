@@ -17,6 +17,7 @@ export function getCrmPool() {
 
   pool = new Pool({
     connectionString: config.crmDatabaseUrl,
+
     ssl: {
       rejectUnauthorized: false,
     },

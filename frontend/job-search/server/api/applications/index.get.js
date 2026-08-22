@@ -11,18 +11,22 @@ export default defineEventHandler(async (event) => {
     .from('applications')
     .select(
       `
-      id,
-      job_posting_id,
-      crm_lead_id,
-      crm_quiz_id,
-      status,
-      applied_at,
-      application_url,
-      resume_version,
-      notes,
-      created_at,
-      updated_at
-    `,
+          id,
+          job_posting_id,
+          status,
+          applied_at,
+          application_url,
+          resume_version,
+          notes,
+          created_at,
+          updated_at,
+          application_contacts (
+            id,
+            crm_lead_id,
+            crm_quiz_id,
+            created_at
+          )
+        `,
     )
     .order('created_at', {
       ascending: false,

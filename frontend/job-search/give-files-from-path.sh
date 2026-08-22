@@ -5,12 +5,10 @@ OUTPUT="give-files-from-path.txt"
 FILES=(
 app/pages/index.vue
 app/components/table/DataTable.vue
-app/components/table/TableFilters.vue
-app/components/table/Pagination.vue
 server/api/jobs.get.js
-server/api/filters.get.js
 server/utils/supabase.js
-
+nuxt.config.js
+package.json
 )
 
 > "$OUTPUT"
