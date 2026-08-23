@@ -82,11 +82,7 @@ function handleSaved(application) {
             Fit
           </th>
 
-          <th
-            class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
-            @click="emit('sort', 'priority_score')">
-            Priority
-          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold">Notes</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Job</th>
 
@@ -99,6 +95,8 @@ function handleSaved(application) {
           <th class="px-4 py-3 text-left text-sm font-semibold">Recommendation</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Application</th>
+
+          <th class="px-4 py-3 text-left text-sm font-semibold">Notes</th>
 
           <th
             class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
@@ -114,8 +112,12 @@ function handleSaved(application) {
             {{ formatScore(row.fit_score) }}
           </td>
 
-          <td class="px-4 py-3">
-            {{ row.priority_score ?? '-' }}
+          <td class="max-w-xs px-4 py-3 text-sm text-gray-600" :title="row.application?.notes || ''">
+            <span v-if="row.application?.notes">
+              {{ row.application.notes }}
+            </span>
+
+            <span v-else class="text-gray-400"> - </span>
           </td>
 
           <td class="px-4 py-3">
@@ -157,17 +159,25 @@ function handleSaved(application) {
             </button>
           </td>
 
+          <td class="max-w-xs px-4 py-3 text-sm text-gray-600" :title="row.application?.notes || ''">
+            <span v-if="row.application?.notes">
+              {{ row.application.notes }}
+            </span>
+
+            <span v-else class="text-gray-400"> - </span>
+          </td>
+
           <td class="px-4 py-3">
             {{ formatDate(row.posted_at) }}
           </td>
         </tr>
 
         <tr v-if="!loading && !rows.length">
-          <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
+          <td colspan="10" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
         </tr>
 
         <tr v-if="loading">
-          <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
+          <td colspan="10" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
         </tr>
       </tbody>
     </table>

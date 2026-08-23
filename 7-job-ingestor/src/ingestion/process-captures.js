@@ -40,6 +40,42 @@ function moveFile(filename, fromDir, toDir) {
   fs.renameSync(path.join(fromDir, filename), path.join(toDir, filename));
 }
 
+function cleanupProcessedFiles() {
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const now = Date.now();
+
+  let files;
+
+  try {
+    files = fs.readdirSync(PROCESSED_DIR);
+  } catch (error) {
+    console.error('Could not read processed directory:', error.message);
+    return;
+  }
+
+  for (const filename of files) {
+    const filepath = path.join(PROCESSED_DIR, filename);
+
+    try {
+      const stats = fs.statSync(filepath);
+
+      if (!stats.isFile()) {
+        continue;
+      }
+
+      const ageMs = now - stats.mtimeMs;
+
+      if (ageMs > ONE_HOUR_MS) {
+        fs.unlinkSync(filepath);
+
+        console.log(`🗑 Deleted processed capture older than 1 hour: ${filename}`);
+      }
+    } catch (error) {
+      console.error(`Could not clean processed file ${filename}:`, error.message);
+    }
+  }
+}
+
 async function ingestCapture(filename) {
   const inboxPath = path.join(INBOX_DIR, filename);
 
@@ -120,6 +156,8 @@ async function ingestCapture(filename) {
     // 2. jobs_2 processing job was successfully created
     //
     moveFile(filename, PROCESSING_DIR, PROCESSED_DIR);
+
+    cleanupProcessedFiles();
 
     console.log(`✓ Ingested: ${data.title} (${source})`);
   } catch (err) {

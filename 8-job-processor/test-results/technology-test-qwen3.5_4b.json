@@ -1,0 +1,153 @@
+{
+  "generated_at": "2026-08-22T09:26:43.127Z",
+  "model": "qwen3.5:4b",
+  "target_role_version": 1,
+  "job_count": 9,
+  "successful_jobs": 2,
+  "failed_jobs": 7,
+  "total_elapsed_ms": 1040145,
+  "total_elapsed_seconds": 1040.14,
+  "average_job_elapsed_ms": 90713,
+  "average_job_elapsed_seconds": 90.71,
+  "results": [
+    {
+      "job_id": 104,
+      "title": "Full Stack Software Engineer",
+      "company": "Gridbricks",
+      "elapsed_ms": 160412,
+      "elapsed_seconds": 160.41,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    },
+    {
+      "job_id": 99,
+      "title": "Full Stack Engineer (MERN + AI Agents)",
+      "company": "Mytimeline",
+      "elapsed_ms": 152552,
+      "elapsed_seconds": 152.55,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string; technology.required contains technologies not present in labels: React, TypeScript"
+    },
+    {
+      "job_id": 111,
+      "title": "Full Stack Developer",
+      "company": "Momentum India",
+      "elapsed_ms": 100462,
+      "elapsed_seconds": 100.46,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    },
+    {
+      "job_id": 97,
+      "title": "Full Stack Developer",
+      "company": "Billcit",
+      "elapsed_ms": 124381,
+      "elapsed_seconds": 124.38,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: role.label must be one of: direct, adjacent, unrelated; technology.reason must be a string; technology.required contains technologies not present in labels: PostgreSQL, MongoDB, Git, GitHub; company.size_label must be one of: 1-10, 11-50, 51-200, 201-500, 501-1000, 1001+, unknown; company.stage_label must be one of: pre-seed, seed, early-stage, growth, enterprise, unknown"
+    },
+    {
+      "job_id": 107,
+      "title": "Full Stack Engineer",
+      "company": "MIRIAN AI",
+      "elapsed_ms": 112123,
+      "elapsed_seconds": 112.12,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    },
+    {
+      "job_id": 106,
+      "title": "Full Stack Engineer",
+      "company": "GreenChoice",
+      "elapsed_ms": 90240,
+      "elapsed_seconds": 90.24,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string; company must be an object"
+    },
+    {
+      "job_id": 98,
+      "title": "Tech Lead – AI & Full-Stack Platform Engineering",
+      "company": "Omnifi",
+      "elapsed_ms": 90569,
+      "elapsed_seconds": 90.57,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job is a direct match as it seeks an early-stage Tech Lead for AI-enabled platform engineering, requiring Node.js/React (Vue/Nuxt equivalents), PostgreSQL (MySQL accepted per JSON list logic if not specified otherwise in target policy but listed here), and LLM integrations with product ownership."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "PostgreSQL",
+            "React",
+            "TypeScript",
+            "LLM APIs"
+          ],
+          "required": [
+            "Node.js",
+            "React",
+            "TypeScript",
+            "LLM APIs",
+            "PostgreSQL"
+          ],
+          "nice_to_have": [],
+          "reason": "All listed technologies are explicitly required for the Tech Lead role involving backend services, frontend apps, and AI workflow design. MySQL and RAG/Vector databases are mentioned but classified as acceptable alternatives or architectural patterns rather than standalone technology labels per strict extraction rules if not core JS runtime."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "early-stage",
+          "reason": "Company explicitly states 'Omnifi is building an AI-native platform' and describes it as a 'This is an early-stage build'. Company size is not mentioned."
+        }
+      }
+    },
+    {
+      "job_id": 90,
+      "title": "Full Stack Developer (React.js + Node.js)",
+      "company": "India Tech Engine",
+      "elapsed_ms": 90856,
+      "elapsed_seconds": 90.86,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job explicitly seeks a Full Stack Developer with experience in React/Next.js and Node.js, matching the target role's preference for full-stack JavaScript/Node.js. The responsibilities align directly with building web applications and APIs."
+        },
+        "technology": {
+          "labels": [
+            "React",
+            "Next.js",
+            "TypeScript",
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL"
+          ],
+          "required": [
+            "React",
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL"
+          ],
+          "nice_to_have": [],
+          "reason": "Required skills (JavaScript/TypeScript, React/Next.js, Node.js/Express) and core infrastructure skills (databases like PostgreSQL) are listed as explicit requirements for responsibilities including building scalable backend services. Alternative databases (MongoDB, MySQL) were mentioned in required context but do not need to be individually classified since the target specifically prefers PostgreSQL; however, given the instruction to avoid inventing technologies beyond evidence, only PostgreSQL is selected from this cluster as it aligns perfectly with the target policy."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "The job description lacks explicit evidence regarding company size or stage. While the 'India Tech Engine' name implies a potential startup and early-stage contexts are common for such naming, no specific text in the provided description confirms this information."
+        }
+      }
+    },
+    {
+      "job_id": 110,
+      "title": "Full Stack Engineer- MERN",
+      "company": "Spenza",
+      "elapsed_ms": 118546,
+      "elapsed_seconds": 118.55,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    }
+  ]
+}

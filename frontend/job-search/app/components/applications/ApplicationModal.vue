@@ -31,7 +31,7 @@ const error = ref('');
 const contacts = ref([]);
 
 const form = ref({
-  status: 'applied',
+  status: 'seen',
   applied_at: '',
   application_url: '',
   resume_version: '',
@@ -74,9 +74,9 @@ function resetForm() {
   error.value = '';
 
   form.value = {
-    status: props.application?.status || 'applied',
+    status: props.application?.status || 'seen',
 
-    applied_at: toDatetimeLocal(props.application?.applied_at || new Date()),
+    applied_at: toDatetimeLocal(props.application?.applied_at),
 
     application_url: props.application?.application_url || props.job?.apply_url || props.job?.url || '',
 
@@ -230,6 +230,8 @@ watch(
           <label class="mb-2 block text-sm font-medium text-gray-700"> Application status </label>
 
           <select v-model="form.status" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+            <option value="seen">Seen</option>
+
             <option value="applied">Applied</option>
 
             <option value="interview">Interview</option>
@@ -312,14 +314,16 @@ watch(
 
         <!-- URL -->
 
-        <div>
+        <div v-if="form.application_url">
           <label class="mb-2 block text-sm font-medium text-gray-700"> Application URL </label>
 
-          <input
-            v-model="form.application_url"
-            type="url"
-            placeholder="https://..."
-            class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+          <a
+            :href="form.application_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="block truncate text-sm text-blue-600 underline hover:text-blue-800">
+            {{ form.application_url }}
+          </a>
         </div>
 
         <!-- RESUME -->

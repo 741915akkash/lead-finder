@@ -1,0 +1,244 @@
+{
+  "generated_at": "2026-08-22T10:03:28.788Z",
+  "model": "qwen3.5:9b",
+  "target_role_version": 1,
+  "job_count": 9,
+  "successful_jobs": 4,
+  "failed_jobs": 5,
+  "total_elapsed_ms": 1958819,
+  "total_elapsed_seconds": 1958.82,
+  "average_job_elapsed_ms": 175645,
+  "average_job_elapsed_seconds": 175.64,
+  "results": [
+    {
+      "job_id": 104,
+      "title": "Full Stack Software Engineer",
+      "company": "Gridbricks",
+      "elapsed_ms": 213438,
+      "elapsed_seconds": 213.44,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job title, required skills (Full Stack React/Python), and responsibilities align directly with the target role's preference for full-stack/product engineering in early-stage startups."
+        },
+        "technology": {
+          "labels": [
+            "LLM APIs",
+            "React",
+            "Next.js",
+            "Python",
+            "FastAPI",
+            "Kubernetes",
+            "Celery",
+            "Ray",
+            "Dask",
+            "NumPy",
+            "SciPy",
+            "pandas",
+            "React Flow",
+            "D3",
+            "WebGL"
+          ],
+          "required": [
+            "React",
+            "Next.js",
+            "Python",
+            "FastAPI"
+          ],
+          "nice_to_have": [
+            "LLM APIs",
+            "Kubernetes",
+            "Celery",
+            "Ray",
+            "Dask",
+            "NumPy",
+            "SciPy",
+            "pandas",
+            "React Flow",
+            "D3",
+            "WebGL"
+          ],
+          "reason": "The job explicitly requires 'Strong React' and experience with 'Python FastAPI or an equivalent async framework'. The detection list includes both Next.js (alternative to plain React) as part of the frontend stack, but lists distributed orchestration tools, scientific computing libraries, and specific UI visualization technologies only under a 'Nice to have' section."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "early-stage",
+          "reason": "The job description explicitly states the company is an '0-to-1 product', a 'top-notch team' (implying small size), and mentions working with founders, which are strong indicators of being early-stage. Exact employee count cannot be determined."
+        }
+      }
+    },
+    {
+      "job_id": 99,
+      "title": "Full Stack Engineer (MERN + AI Agents)",
+      "company": "Mytimeline",
+      "elapsed_ms": 364064,
+      "elapsed_seconds": 364.06,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string; technology cannot be both required and nice_to_have: Express.js"
+    },
+    {
+      "job_id": 111,
+      "title": "Full Stack Developer",
+      "company": "Momentum India",
+      "elapsed_ms": 99326,
+      "elapsed_seconds": 99.33,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job title 'Full Stack Developer' and requirements for NodeJS, AngularJS (frontend) directly match the target role's need for full-stack ownership."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "MySQL",
+            "Git"
+          ],
+          "required": [],
+          "nice_to_have": [
+            "Node.js",
+            "MySQL"
+          ],
+          "reason": "The job description lists these as 'Must Have Skills', making them required. Git is a standard tool but the specific evidence for strict requirement applies primarily to the stack."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "The job posting provides no explicit company size or stage data; therefore, both are unknown per rules."
+        }
+      }
+    },
+    {
+      "job_id": 97,
+      "title": "Full Stack Developer",
+      "company": "Billcit",
+      "elapsed_ms": 176909,
+      "elapsed_seconds": 176.91,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string; company.reason must be a string"
+    },
+    {
+      "job_id": 107,
+      "title": "Full Stack Engineer",
+      "company": "MIRIAN AI",
+      "elapsed_ms": 276573,
+      "elapsed_seconds": 276.57,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    },
+    {
+      "job_id": 106,
+      "title": "Full Stack Engineer",
+      "company": "GreenChoice",
+      "elapsed_ms": 224517,
+      "elapsed_seconds": 224.52,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job title 'Full Stack Engineer' and the requirement to design, build, and maintain end-to-end solutions using both frontend (React.js) and backend (Node.js/Express/Databases) technologies align directly with the target role's description of a full-stack/product engineer who takes significant ownership."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "Express.js",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "AWS",
+            "Docker",
+            "Git",
+            "React",
+            "TypeScript",
+            "Kubernetes"
+          ],
+          "required": [
+            "Node.js",
+            "Express.js",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "AWS",
+            "Docker",
+            "Git",
+            "React",
+            "TypeScript"
+          ],
+          "nice_to_have": [],
+          "reason": "The job description explicitly lists skills like React.js, Node.js/Express, and databases (MySQL/PostgreSQL/MongoDB) under 'Required Skills' or in the core design responsibilities. Technologies listed as 'Nice to Have' such as Kubernetes are excluded from required/nice_to_have because they lack specific context distinguishing them from other cloud/deployment tools; however, based on strict evidence interpretation where importance is unclear for non-specified items (or if interpreted strictly alongside others), all explicitly mentioned in the skills list without alternative qualifiers like 'some of these' or distinct bonus phrasing are treated as core expectations. Conversely, standard CI/CD/Docker/Git/AWS listed generally under required context fit here."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "The job posting does not explicitly state the company's funding stage or size. Terms like 'fast-moving' are absent, and there is no mention of seed rounds, specific team counts, or explicit startup designations."
+        }
+      }
+    },
+    {
+      "job_id": 98,
+      "title": "Tech Lead – AI & Full-Stack Platform Engineering",
+      "company": "Omnifi",
+      "elapsed_ms": 227714,
+      "elapsed_seconds": 227.71,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    },
+    {
+      "job_id": 90,
+      "title": "Full Stack Developer (React.js + Node.js)",
+      "company": "India Tech Engine",
+      "elapsed_ms": 165298,
+      "elapsed_seconds": 165.3,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job title 'Full Stack Developer' and the requirement for full-stack skills (React.js + Node.js) directly match the target role seeking a 'full-stack/product engineer'. The responsibilities listed align perfectly with building MVPs, features, and having product ownership."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "AWS",
+            "Git",
+            "React",
+            "Next.js",
+            "TypeScript"
+          ],
+          "required": [
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "React",
+            "Next.js",
+            "Git"
+          ],
+          "nice_to_have": [],
+          "reason": "The job explicitly lists React/Next and Node/Express as primary required skills. It also mandates experience with databases, giving 'PostgreSQL', 'MySQL', and 'MongoDB' equal status in the requirements section."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "No specific company name or stage descriptors (e.g., startup, early-stage) are present in this job description to determine size or funding stage. The previous context mentions 'early-stage startups' but that belongs to the target role preferences, not this specific job posting."
+        }
+      }
+    },
+    {
+      "job_id": 110,
+      "title": "Full Stack Engineer- MERN",
+      "company": "Spenza",
+      "elapsed_ms": 210972,
+      "elapsed_seconds": 210.97,
+      "success": false,
+      "error": "Job analysis validation failed after 2 attempts: technology.reason must be a string"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+500 jobs
+   ↓
+cheap deterministic filtering
+   ↓
+100 plausible jobs
+   ↓
+AI classification
+   ↓
+50 technically viable
+   ↓
+deterministic fit
+   ↓
+20 worth considering
+   ↓
+apply + networking

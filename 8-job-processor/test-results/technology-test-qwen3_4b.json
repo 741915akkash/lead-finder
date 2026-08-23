@@ -1,0 +1,442 @@
+{
+  "generated_at": "2026-08-22T08:17:50.695Z",
+  "model": "qwen3:4b",
+  "target_role_version": 1,
+  "job_count": 9,
+  "successful_jobs": 9,
+  "failed_jobs": 0,
+  "total_elapsed_ms": 491330,
+  "total_elapsed_seconds": 491.33,
+  "average_job_elapsed_ms": 54592,
+  "average_job_elapsed_seconds": 54.59,
+  "results": [
+    {
+      "job_id": 104,
+      "title": "Full Stack Software Engineer",
+      "company": "Gridbricks",
+      "elapsed_ms": 45797,
+      "elapsed_seconds": 45.8,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job matches target role's focus on early-stage startup roles with full-stack ownership, building MVPs, and product/engineering ownership."
+        },
+        "technology": {
+          "labels": [
+            "LLM APIs",
+            "React",
+            "Next.js",
+            "Python",
+            "FastAPI",
+            "Kubernetes",
+            "Celery",
+            "Ray",
+            "Dask",
+            "NumPy",
+            "SciPy",
+            "pandas",
+            "React Flow",
+            "D3",
+            "WebGL"
+          ],
+          "required": [
+            "React",
+            "Python",
+            "FastAPI"
+          ],
+          "nice_to_have": [
+            "LLM APIs",
+            "Next.js",
+            "Kubernetes",
+            "Celery",
+            "Ray",
+            "Dask",
+            "NumPy",
+            "SciPy",
+            "pandas",
+            "React Flow",
+            "D3",
+            "WebGL"
+          ],
+          "reason": "React and Python/FastAPI are central to the role (required), while LLM APIs and other technologies are listed as nice-to-have or optional."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "early-stage",
+          "reason": "Job explicitly states 'early-stage team' and '0-to-1 product', which qualifies as early-stage."
+        }
+      }
+    },
+    {
+      "job_id": 99,
+      "title": "Full Stack Engineer (MERN + AI Agents)",
+      "company": "Mytimeline",
+      "elapsed_ms": 73917,
+      "elapsed_seconds": 73.92,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "The job requires full-stack ownership, early-stage startup context, and MERN stack with AI/LLM integration, matching the target role's focus on product/engineering ownership and early-stage startups."
+        },
+        "technology": {
+          "labels": [
+            "MERN",
+            "Node.js",
+            "Express.js",
+            "MongoDB",
+            "Ollama",
+            "LLM APIs",
+            "RAG",
+            "Vector databases",
+            "AI agents",
+            "Embeddings",
+            "AWS",
+            "Railway",
+            "Vercel",
+            "Git",
+            "React",
+            "Next.js",
+            "TypeScript",
+            "Kubernetes"
+          ],
+          "required": [
+            "MERN",
+            "Node.js",
+            "Express.js",
+            "MongoDB",
+            "LLM APIs",
+            "RAG",
+            "Vector databases",
+            "AI agents",
+            "Embeddings",
+            "Git",
+            "React",
+            "Next.js",
+            "TypeScript"
+          ],
+          "nice_to_have": [
+            "Ollama",
+            "Kubernetes",
+            "AWS",
+            "Railway",
+            "Vercel"
+          ],
+          "reason": "Required technologies include core MERN stack (MongoDB, Express, React, Node.js), LLM APIs, RAG, vector databases, AI agents, embeddings, Git, React, Next.js, and TypeScript. Nice-to-have technologies include AI orchestration tools (Ollama), cloud deployment (AWS, Railway, Vercel), and Kubernetes."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "early-stage",
+          "reason": "The job mentions 'small, fast-moving team (1–10 people)' and 'early-stage environment', providing explicit evidence for early-stage stage_label."
+        }
+      }
+    },
+    {
+      "job_id": 111,
+      "title": "Full Stack Developer",
+      "company": "Momentum India",
+      "elapsed_ms": 39408,
+      "elapsed_seconds": 39.41,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job targets full-stack developer with JavaScript/Node.js and frontend frameworks, aligning with target role's need for full-stack/product engineering ownership in early-stage startups."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "MySQL",
+            "Git"
+          ],
+          "required": [
+            "Node.js",
+            "MySQL"
+          ],
+          "nice_to_have": [
+            "Git"
+          ],
+          "reason": "Job lists NodeJS and MySQL as 'Must Have Skills' with explicit requirement for full-stack experience, while Git is mentioned as experience but not explicitly categorized as required or nice-to-have. Target role prefers PostgreSQL, but MySQL is acceptable as a database option."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "Job description does not provide explicit evidence about company stage or size, so defaulting to 'unknown' as per rules."
+        }
+      }
+    },
+    {
+      "job_id": 97,
+      "title": "Full Stack Developer",
+      "company": "Billcit",
+      "elapsed_ms": 53176,
+      "elapsed_seconds": 53.18,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job matches target role's focus on full-stack engineering with ownership in early-stage startups, building MVPs and production features using JavaScript/Node.js, Vue/Nuxt, PostgreSQL, and AI/LLM integrations."
+        },
+        "technology": {
+          "labels": [
+            "MERN",
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "Git",
+            "GitHub",
+            "React",
+            "Next.js",
+            "TypeScript"
+          ],
+          "required": [
+            "Node.js",
+            "React",
+            "Next.js",
+            "PostgreSQL",
+            "REST APIs"
+          ],
+          "nice_to_have": [
+            "TypeScript",
+            "Express.js",
+            "Git",
+            "GitHub"
+          ],
+          "reason": "Required technologies include core full-stack stack (Node.js, React, Next.js) and database (PostgreSQL), with REST APIs explicitly mentioned. Nice-to-have includes TypeScript, Express.js, Git, and GitHub as they are listed as tools but not central to the role's MVP/production feature focus."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "Job posting does not explicitly state company size or stage, so defaults to 'unknown' for both."
+        }
+      }
+    },
+    {
+      "job_id": 107,
+      "title": "Full Stack Engineer",
+      "company": "MIRIAN AI",
+      "elapsed_ms": 53466,
+      "elapsed_seconds": 53.47,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job is for a Founding AI Engineer who builds production agentic systems from scratch, aligns with full-stack/product engineering ownership, early-stage startup focus, and required technologies match the target role's preferences."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "PostgreSQL",
+            "Docker",
+            "React",
+            "Next.js",
+            "TypeScript"
+          ],
+          "required": [
+            "Node.js",
+            "PostgreSQL",
+            "TypeScript",
+            "Next.js",
+            "React"
+          ],
+          "nice_to_have": [
+            "Docker"
+          ],
+          "reason": "Required technologies: Node.js (explicitly listed in stack), PostgreSQL (explicitly listed), TypeScript (explicitly listed), Next.js (explicitly listed), React (explicitly listed). Docker is nice-to-have as it's mentioned but not central to core functionality."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "No explicit evidence for company size or stage in job posting; mentions 'PE-backed mid-market companies' but does not specify stage or size."
+        }
+      }
+    },
+    {
+      "job_id": 106,
+      "title": "Full Stack Engineer",
+      "company": "GreenChoice",
+      "elapsed_ms": 87118,
+      "elapsed_seconds": 87.12,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job matches target role's requirement for full-stack/product engineering ownership in early-stage startups with JavaScript/Node.js, Vue/Nuxt, and PostgreSQL, and direct founder collaboration."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "Express.js",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "AWS",
+            "Docker",
+            "Git",
+            "React",
+            "TypeScript",
+            "Kubernetes"
+          ],
+          "required": [
+            "Node.js",
+            "Express.js",
+            "PostgreSQL",
+            "React",
+            "Git"
+          ],
+          "nice_to_have": [
+            "TypeScript",
+            "MySQL",
+            "MongoDB",
+            "AWS",
+            "Docker",
+            "Kubernetes"
+          ],
+          "reason": "Required technologies: Node.js/Express.js for backend, PostgreSQL for databases, React for frontend, and Git for version control. Nice-to-have: TypeScript, MySQL, MongoDB, AWS, Docker, Kubernetes as listed with optional/plus language."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "Job posting does not explicitly state company stage or size, so default to unknown."
+        }
+      }
+    },
+    {
+      "job_id": 98,
+      "title": "Tech Lead – AI & Full-Stack Platform Engineering",
+      "company": "Omnifi",
+      "elapsed_ms": 51613,
+      "elapsed_seconds": 51.61,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job is for an early-stage startup role with full-stack engineering ownership, matching the target role's focus on building MVPs, full-stack JavaScript/Node.js, Vue/Nuxt, PostgreSQL, AI/LLM integrations, and direct founder collaboration."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "PostgreSQL",
+            "MySQL",
+            "LLM APIs",
+            "RAG",
+            "Vector databases",
+            "React",
+            "TypeScript"
+          ],
+          "required": [
+            "Node.js",
+            "React",
+            "TypeScript",
+            "LLM APIs",
+            "RAG",
+            "Vector databases"
+          ],
+          "nice_to_have": [
+            "PostgreSQL",
+            "MySQL"
+          ],
+          "reason": "LLM APIs, RAG, and Vector databases are explicitly required for AI-agent workflows and LLM integrations. PostgreSQL and MySQL are mentioned as database options but not specified as required, so they are classified as nice-to-have."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "early-stage",
+          "reason": "Job states 'early-stage build' and 'one of the first engineering hires', explicitly indicating early-stage startup context."
+        }
+      }
+    },
+    {
+      "job_id": 90,
+      "title": "Full Stack Developer (React.js + Node.js)",
+      "company": "India Tech Engine",
+      "elapsed_ms": 45809,
+      "elapsed_seconds": 45.81,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job matches target role's requirement for early-stage startup full-stack/product engineering with ownership."
+        },
+        "technology": {
+          "labels": [
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB",
+            "AWS",
+            "Git",
+            "React",
+            "Next.js",
+            "TypeScript"
+          ],
+          "required": [
+            "Node.js",
+            "Express.js",
+            "REST APIs",
+            "PostgreSQL",
+            "MySQL",
+            "MongoDB"
+          ],
+          "nice_to_have": [
+            "AWS",
+            "Git",
+            "React",
+            "Next.js",
+            "TypeScript"
+          ],
+          "reason": "Required technologies include database options (PostgreSQL, MySQL, MongoDB) and core frameworks (Node.js, Express.js, REST APIs). Nice-to-have includes cloud services, version control, and specific JS frameworks."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "Job posting does not provide explicit evidence for company stage or size."
+        }
+      }
+    },
+    {
+      "job_id": 110,
+      "title": "Full Stack Engineer- MERN",
+      "company": "Spenza",
+      "elapsed_ms": 41025,
+      "elapsed_seconds": 41.02,
+      "success": true,
+      "analysis": {
+        "role": {
+          "label": "direct",
+          "reason": "Job matches target role by requiring full-stack ownership, building MVPs/features, and working directly with founders in early-stage startups."
+        },
+        "technology": {
+          "labels": [
+            "MERN",
+            "Node.js",
+            "Express.js",
+            "MongoDB",
+            "AWS",
+            "React"
+          ],
+          "required": [
+            "MERN",
+            "Node.js",
+            "Express.js",
+            "MongoDB",
+            "AWS",
+            "React"
+          ],
+          "nice_to_have": [],
+          "reason": "MERN stack is explicitly required, with all components listed as core technologies. AI integrations are mentioned but not explicitly required as a core technology (only as a bonus)."
+        },
+        "company": {
+          "size_label": "unknown",
+          "stage_label": "unknown",
+          "reason": "Job does not specify company stage or size, so defaults to unknown."
+        }
+      }
+    }
+  ]
+}

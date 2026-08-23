@@ -1,0 +1,349 @@
+{
+  "generated_at": "2026-08-22T12:34:31.542Z",
+  "source_file": "technology-test-qwen3.5_9b.json",
+  "model": "qwen3.5:9b",
+  "target_role_version": 1,
+  "job_count": 9,
+  "summary": {
+    "pass": 3,
+    "reject": 1,
+    "review": 0,
+    "skipped": 5
+  },
+  "policy": {
+    "familiar": [
+      "AI agents",
+      "AWS",
+      "Docker",
+      "Embeddings",
+      "Express.js",
+      "Git",
+      "GitHub",
+      "GitHub Actions",
+      "JavaScript",
+      "LLM APIs",
+      "Linux",
+      "MEVN",
+      "MongoDB",
+      "MySQL",
+      "Node.js",
+      "Nuxt + Node.js",
+      "Nuxt.js",
+      "Ollama",
+      "OpenAI API",
+      "PERN",
+      "PostgreSQL",
+      "RAG",
+      "REST APIs",
+      "Railway",
+      "Supabase",
+      "Vector databases",
+      "Vercel",
+      "Vue.js",
+      "pgvector"
+    ],
+    "learn_quickly": [
+      "Drizzle ORM",
+      "GraphQL",
+      "Jest",
+      "NestJS",
+      "Next.js",
+      "Playwright",
+      "Prisma",
+      "React",
+      "Redis",
+      "Socket.IO",
+      "TypeScript",
+      "WebSockets"
+    ],
+    "excluded": [
+      ".NET",
+      "ASP.NET",
+      "Angular",
+      "AngularJS",
+      "C#",
+      "Django",
+      "FastAPI",
+      "Flask",
+      "Go",
+      "Golang",
+      "Java",
+      "Laravel",
+      "PHP",
+      "Python",
+      "Rails",
+      "Ruby",
+      "Rust",
+      "Spring"
+    ]
+  },
+  "jobs": [
+    {
+      "job_id": 104,
+      "title": "Full Stack Software Engineer",
+      "company": "Gridbricks",
+      "decision": "REJECT",
+      "reason": "Excluded technology required: Python, FastAPI",
+      "required": [
+        "React",
+        "Next.js",
+        "Python",
+        "FastAPI"
+      ],
+      "familiar": [],
+      "learn_quickly": [
+        "React",
+        "Next.js"
+      ],
+      "excluded": [
+        "Python",
+        "FastAPI"
+      ],
+      "unknown": [],
+      "classifications": [
+        {
+          "technology": "React",
+          "classification": "learn_quickly"
+        },
+        {
+          "technology": "Next.js",
+          "classification": "learn_quickly"
+        },
+        {
+          "technology": "Python",
+          "classification": "excluded"
+        },
+        {
+          "technology": "FastAPI",
+          "classification": "excluded"
+        }
+      ]
+    },
+    {
+      "job_id": 99,
+      "title": "Full Stack Engineer (MERN + AI Agents)",
+      "company": "Mytimeline",
+      "decision": "SKIP",
+      "reason": "Model analysis failed",
+      "required": [],
+      "familiar": [],
+      "learn_quickly": [],
+      "excluded": [],
+      "unknown": [],
+      "classifications": []
+    },
+    {
+      "job_id": 111,
+      "title": "Full Stack Developer",
+      "company": "Momentum India",
+      "decision": "PASS",
+      "reason": "All required technologies are familiar or learn-quickly.",
+      "required": [],
+      "familiar": [],
+      "learn_quickly": [],
+      "excluded": [],
+      "unknown": [],
+      "classifications": []
+    },
+    {
+      "job_id": 97,
+      "title": "Full Stack Developer",
+      "company": "Billcit",
+      "decision": "SKIP",
+      "reason": "Model analysis failed",
+      "required": [],
+      "familiar": [],
+      "learn_quickly": [],
+      "excluded": [],
+      "unknown": [],
+      "classifications": []
+    },
+    {
+      "job_id": 107,
+      "title": "Full Stack Engineer",
+      "company": "MIRIAN AI",
+      "decision": "SKIP",
+      "reason": "Model analysis failed",
+      "required": [],
+      "familiar": [],
+      "learn_quickly": [],
+      "excluded": [],
+      "unknown": [],
+      "classifications": []
+    },
+    {
+      "job_id": 106,
+      "title": "Full Stack Engineer",
+      "company": "GreenChoice",
+      "decision": "PASS",
+      "reason": "All required technologies are familiar or learn-quickly.",
+      "required": [
+        "Node.js",
+        "Express.js",
+        "PostgreSQL",
+        "MySQL",
+        "MongoDB",
+        "AWS",
+        "Docker",
+        "Git",
+        "React",
+        "TypeScript"
+      ],
+      "familiar": [
+        "Node.js",
+        "Express.js",
+        "PostgreSQL",
+        "MySQL",
+        "MongoDB",
+        "AWS",
+        "Docker",
+        "Git"
+      ],
+      "learn_quickly": [
+        "React",
+        "TypeScript"
+      ],
+      "excluded": [],
+      "unknown": [],
+      "classifications": [
+        {
+          "technology": "Node.js",
+          "classification": "familiar"
+        },
+        {
+          "technology": "Express.js",
+          "classification": "familiar"
+        },
+        {
+          "technology": "PostgreSQL",
+          "classification": "familiar"
+        },
+        {
+          "technology": "MySQL",
+          "classification": "familiar"
+        },
+        {
+          "technology": "MongoDB",
+          "classification": "familiar"
+        },
+        {
+          "technology": "AWS",
+          "classification": "familiar"
+        },
+        {
+          "technology": "Docker",
+          "classification": "familiar"
+        },
+        {
+          "technology": "Git",
+          "classification": "familiar"
+        },
+        {
+          "technology": "React",
+          "classification": "learn_quickly"
+        },
+        {
+          "technology": "TypeScript",
+          "classification": "learn_quickly"
+        }
+      ]
+    },
+    {
+      "job_id": 98,
+      "title": "Tech Lead – AI & Full-Stack Platform Engineering",
+      "company": "Omnifi",
+      "decision": "SKIP",
+      "reason": "Model analysis failed",
+      "required": [],
+      "familiar": [],
+      "learn_quickly": [],
+      "excluded": [],
+      "unknown": [],
+      "classifications": []
+    },
+    {
+      "job_id": 90,
+      "title": "Full Stack Developer (React.js + Node.js)",
+      "company": "India Tech Engine",
+      "decision": "PASS",
+      "reason": "All required technologies are familiar or learn-quickly.",
+      "required": [
+        "Node.js",
+        "Express.js",
+        "REST APIs",
+        "PostgreSQL",
+        "MySQL",
+        "MongoDB",
+        "React",
+        "Next.js",
+        "Git"
+      ],
+      "familiar": [
+        "Node.js",
+        "Express.js",
+        "REST APIs",
+        "PostgreSQL",
+        "MySQL",
+        "MongoDB",
+        "Git"
+      ],
+      "learn_quickly": [
+        "React",
+        "Next.js"
+      ],
+      "excluded": [],
+      "unknown": [],
+      "classifications": [
+        {
+          "technology": "Node.js",
+          "classification": "familiar"
+        },
+        {
+          "technology": "Express.js",
+          "classification": "familiar"
+        },
+        {
+          "technology": "REST APIs",
+          "classification": "familiar"
+        },
+        {
+          "technology": "PostgreSQL",
+          "classification": "familiar"
+        },
+        {
+          "technology": "MySQL",
+          "classification": "familiar"
+        },
+        {
+          "technology": "MongoDB",
+          "classification": "familiar"
+        },
+        {
+          "technology": "React",
+          "classification": "learn_quickly"
+        },
+        {
+          "technology": "Next.js",
+          "classification": "learn_quickly"
+        },
+        {
+          "technology": "Git",
+          "classification": "familiar"
+        }
+      ]
+    },
+    {
+      "job_id": 110,
+      "title": "Full Stack Engineer- MERN",
+      "company": "Spenza",
+      "decision": "SKIP",
+      "reason": "Model analysis failed",
+      "required": [],
+      "familiar": [],
+      "learn_quickly": [],
+      "excluded": [],
+      "unknown": [],
+      "classifications": []
+    }
+  ]
+}
