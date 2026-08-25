@@ -3,6 +3,8 @@ import { ref } from 'vue';
 
 import ApplicationModal from '~/components/applications/ApplicationModal.vue';
 
+import ArchiveModal from '~/components/table/ArchiveModal.vue';
+
 defineProps({
   rows: {
     type: Array,
@@ -24,7 +26,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['sort', 'application-saved']);
+const emit = defineEmits(['sort', 'application-saved', 'job-archived']);
 
 const selectedJob = ref(null);
 
@@ -32,20 +34,22 @@ const selectedApplication = ref(null);
 
 const showApplicationModal = ref(false);
 
+const showArchiveModal = ref(false);
+
+const editingNoteJobId = ref(null);
+
+const editingNote = ref('');
+
+const savingNote = ref(false);
+
+const activeRowId = ref(null);
+
 function formatScore(score) {
   if (score === null || score === undefined) {
     return '-';
   }
 
   return Math.round(score * 100);
-}
-
-function formatDate(date) {
-  if (!date) {
-    return '-';
-  }
-
-  return new Date(date).toLocaleDateString();
 }
 
 function openApplication(row) {
@@ -69,6 +73,86 @@ function handleSaved(application) {
 
   emit('application-saved', application);
 }
+
+function openArchive(row) {
+  selectedJob.value = row;
+
+  showArchiveModal.value = true;
+}
+
+function closeArchive() {
+  showArchiveModal.value = false;
+
+  selectedJob.value = null;
+}
+
+function handleArchived() {
+  closeArchive();
+
+  emit('job-archived');
+}
+
+function startEditingNote(row) {
+  if (!row.application) {
+    return;
+  }
+
+  editingNoteJobId.value = row.id;
+
+  editingNote.value = row.application.notes || '';
+}
+
+function cancelEditingNote() {
+  editingNoteJobId.value = null;
+
+  editingNote.value = '';
+}
+
+async function saveNote(row) {
+  if (!row.application || savingNote.value) {
+    return;
+  }
+
+  savingNote.value = true;
+
+  try {
+    const result = await $fetch('/api/applications/update', {
+      method: 'PATCH',
+
+      body: {
+        id: row.application.id,
+
+        notes: editingNote.value.trim() || null,
+      },
+    });
+
+    row.application.notes = result.notes;
+
+    cancelEditingNote();
+  } catch (error) {
+    console.error('Failed to save application note:', error);
+  } finally {
+    savingNote.value = false;
+  }
+}
+
+function handleNoteKeydown(event, row) {
+  if (event.key === 'Escape') {
+    cancelEditingNote();
+
+    return;
+  }
+
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+
+    saveNote(row);
+  }
+}
+
+function selectRow(row) {
+  activeRowId.value = row.id;
+}
 </script>
 
 <template>
@@ -76,6 +160,8 @@ function handleSaved(application) {
     <table class="min-w-full">
       <thead class="bg-gray-50">
         <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold">Apply</th>
+
           <th
             class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
             @click="emit('sort', 'fit_score')">
@@ -88,69 +174,26 @@ function handleSaved(application) {
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Company</th>
 
-          <th class="px-4 py-3 text-left text-sm font-semibold">Location</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Source</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Recommendation</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Application</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Notes</th>
-
-          <th
-            class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
-            @click="emit('sort', 'posted_at')">
-            Posted
-          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold">Archive</th>
         </tr>
       </thead>
 
       <tbody>
-        <tr v-for="row in rows" :key="row.id" class="border-t hover:bg-gray-50">
-          <td class="px-4 py-3 font-semibold">
-            {{ formatScore(row.fit_score) }}
-          </td>
-
-          <td class="max-w-xs px-4 py-3 text-sm text-gray-600" :title="row.application?.notes || ''">
-            <span v-if="row.application?.notes">
-              {{ row.application.notes }}
-            </span>
-
-            <span v-else class="text-gray-400"> - </span>
-          </td>
-
-          <td class="px-4 py-3">
-            <a
-              :href="row.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-medium text-gray-900 hover:text-blue-600 hover:underline">
-              {{ row.title }}
-            </a>
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.company || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.location || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.source || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.recommendation || '-' }}
-          </td>
+        <tr
+          v-for="row in rows"
+          :key="row.id"
+          class="border-t transition-colors"
+          :class="activeRowId === row.id ? 'bg-gray-100' : 'hover:bg-gray-50'">
+          <!-- APPLY -->
 
           <td class="px-4 py-3">
             <button
               type="button"
-              class="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
-              @click="openApplication(row)">
+              class="rounded-lg bg-red-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              @click="
+                openApplication(row);
+                selectRow(row);
+              ">
               <span v-if="row.application">
                 {{ row.application.status }}
               </span>
@@ -159,25 +202,86 @@ function handleSaved(application) {
             </button>
           </td>
 
-          <td class="max-w-xs px-4 py-3 text-sm text-gray-600" :title="row.application?.notes || ''">
-            <span v-if="row.application?.notes">
-              {{ row.application.notes }}
-            </span>
+          <!-- FIT -->
+
+          <td class="px-4 py-3 font-semibold">
+            {{ formatScore(row.fit_score) }}
+          </td>
+
+          <!-- NOTES -->
+
+          <td class="max-w-xs px-4 py-3 text-sm text-gray-600">
+            <div v-if="editingNoteJobId === row.id">
+              <textarea
+                v-model="editingNote"
+                rows="3"
+                autofocus
+                class="w-full min-w-[220px] resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-900/5"
+                :disabled="savingNote"
+                @keydown="handleNoteKeydown($event, row)"
+                @blur="saveNote(row)" />
+
+              <div class="mt-1 text-xs text-gray-400">
+                {{ savingNote ? 'Saving...' : 'Ctrl + Enter to save · Esc to cancel' }}
+              </div>
+            </div>
+
+            <button
+              v-else-if="row.application"
+              type="button"
+              class="w-full rounded-lg px-2 py-1.5 text-left hover:bg-gray-100"
+              :title="row.application.notes || 'Add note'"
+              @click="startEditingNote(row)">
+              <span v-if="row.application.notes">
+                {{ row.application.notes }}
+              </span>
+
+              <span v-else class="text-gray-400"> Add note... </span>
+            </button>
 
             <span v-else class="text-gray-400"> - </span>
           </td>
 
+          <!-- JOB -->
+
           <td class="px-4 py-3">
-            {{ formatDate(row.posted_at) }}
+            <a
+              :href="row.url"
+              target="_blank"
+              @click="selectRow(row)"
+              rel="noopener noreferrer"
+              class="inline-flex items-center rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200">
+              Job
+            </a>
+          </td>
+
+          <!-- COMPANY -->
+
+          <td class="px-4 py-3">
+            {{ row.company || '-' }}
+          </td>
+
+          <!-- ARCHIVE -->
+
+          <td class="px-4 py-3">
+            <button
+              type="button"
+              class="rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              @click="
+                openArchive(row);
+                selectRow(row);
+              ">
+              Archive
+            </button>
           </td>
         </tr>
 
         <tr v-if="!loading && !rows.length">
-          <td colspan="10" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
+          <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
         </tr>
 
         <tr v-if="loading">
-          <td colspan="10" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
+          <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
         </tr>
       </tbody>
     </table>
@@ -189,4 +293,6 @@ function handleSaved(application) {
     :application="selectedApplication"
     @close="closeApplication"
     @saved="handleSaved" />
+
+  <ArchiveModal :open="showArchiveModal" :job="selectedJob" @close="closeArchive" @archived="handleArchived" />
 </template>

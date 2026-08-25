@@ -48,13 +48,18 @@ export default defineEventHandler(async (event) => {
             posted_at,
             fit_score,
             priority_score,
-            recommendation
+            recommendation,
+            archived,
+            archive_reason,
+            archive_note,
+            archived_at
           `,
       {
         count: 'exact',
       },
     )
-    .or(`posted_at.gte.${cutoff.toISOString()},posted_at.is.null`);
+    .or(`posted_at.gte.${cutoff.toISOString()},posted_at.is.null`)
+    .eq('archived', false);
 
   if (search) {
     db = db.or(`title.ilike.%${search}%,company.ilike.%${search}%`);

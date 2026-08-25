@@ -5,3 +5,5 @@ dist/
 
 supabase/.*
 supabase/snippets
+
+give-files-from-path*

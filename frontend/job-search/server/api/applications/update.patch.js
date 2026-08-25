@@ -1,6 +1,6 @@
 import { getSupabase } from '../../utils/supabase';
 
-const ALLOWED_STATUSES = ['applied', 'interview', 'offer', 'rejected'];
+const ALLOWED_STATUSES = ['seen','applied', 'interview', 'offer', 'rejected'];
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);

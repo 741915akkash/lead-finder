@@ -77,7 +77,8 @@ async function handleApplicationSaved() {
         :sort="sort"
         :order="order"
         @sort="handleSort"
-        @application-saved="handleApplicationSaved" />
+        @application-saved="handleApplicationSaved"
+        @job-archived="handleApplicationSaved" />
 
       <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
 
