@@ -6,25 +6,46 @@ const OLLAMA_URL = process.env.OLLAMA_URL;
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL;
 
 async function callOllama(prompt) {
-  const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      prompt,
-      stream: false,
-      format: 'json',
-      think: false,
-    }),
-  });
+  let response;
+
+  try {
+    response = await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        prompt,
+        stream: false,
+        format: 'json',
+        think: false,
+      }),
+    });
+  } catch (error) {
+    const fetchError = new Error(`Ollama fetch failed: ${error.message}`);
+    fetchError.code = 'OLLAMA_FETCH_FAILED';
+    fetchError.temporary = true;
+
+    throw fetchError;
+  }
 
   if (!response.ok) {
-    throw new Error(`Ollama HTTP error: ${response.status}`);
+    const error = new Error(`Ollama HTTP error: ${response.status}`);
+
+    if (response.status >= 500) {
+      error.code = 'OLLAMA_SERVER_ERROR';
+      error.temporary = true;
+    }
+
+    throw error;
   }
 
   const data = await response.json();
+
+  if (!data.response) {
+    throw new Error('Ollama returned an empty response');
+  }
 
   return data.response;
 }

@@ -7,3 +7,5 @@ supabase/.*
 supabase/snippets
 
 give-files-from-path*
+
+data/captures

@@ -96,6 +96,34 @@ function buildAiReason({ analysis, technology, company, salary }) {
     .join(' ');
 }
 
+function isTemporaryError(error) {
+  if (!error) {
+    return false;
+  }
+
+  if (error.temporary === true) {
+    return true;
+  }
+
+  if (error.code === 'OLLAMA_FETCH_FAILED') {
+    return true;
+  }
+
+  if (error.code === 'OLLAMA_SERVER_ERROR') {
+    return true;
+  }
+
+  if (error.name === 'TypeError' && error.message?.includes('fetch failed')) {
+    return true;
+  }
+
+  if (error.message?.includes('fetch failed')) {
+    return true;
+  }
+
+  return false;
+}
+
 async function processNextJob() {
   const job = await claimJob();
 
@@ -142,12 +170,24 @@ async function processNextJob() {
     console.log(`Processing job posting: ${jobPosting.id}`);
     console.log(`Title: ${jobPosting.title}`);
     console.log(`Source: ${jobPosting.source}`);
+    console.log(`Queue attempt: ${job.attempts ?? 1}`);
 
     // --------------------------------------------
     // Stage 1: Parse
     // --------------------------------------------
 
     const parsedJob = await parseJob(jobPosting.raw_text);
+
+    /*
+     * A job without a title is not processable.
+     *
+     * Do NOT fall back to the existing database title.
+     * Do NOT save the parsed result.
+     * This is a permanent data/parser failure.
+     */
+    if (!parsedJob.title || typeof parsedJob.title !== 'string' || !parsedJob.title.trim()) {
+      throw new Error('Parsed job has no valid title');
+    }
 
     console.log('✓ Job parsed and validated');
 
@@ -283,9 +323,17 @@ async function processNextJob() {
     console.error(`✗ Job ${job.id} failed:`, err.message);
 
     try {
-      await failJob(job.id, err.message);
+      if (isTemporaryError(err)) {
+        await failJob(job.id, err.message, true);
+
+        console.log(`↻ Job ${job.id} scheduled for retry.`);
+      } else {
+        await failJob(job.id, err.message, false);
+
+        console.log(`✗ Job ${job.id} permanently failed.`);
+      }
     } catch (failError) {
-      console.error(`✗ Failed to mark job ${job.id} as failed:`, failError.message);
+      console.error(`✗ Failed to update queue job ${job.id}:`, failError.message);
     }
 
     return false;
@@ -298,4 +346,5 @@ module.exports = {
   getRecommendation,
   buildRedFlags,
   buildAiReason,
+  isTemporaryError,
 };

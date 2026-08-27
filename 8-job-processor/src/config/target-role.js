@@ -103,6 +103,12 @@ const TECHNOLOGY_POLICY = {
    * the job fails the technology gate and receives fit_score = 0.
    */
   excluded: [
+    'React Native',
+    'Flutter',
+    'iOS',
+    'Android',
+    'Swift',
+    'Kotlin',
     'Angular',
     'Python',
     'Django',
@@ -117,8 +123,6 @@ const TECHNOLOGY_POLICY = {
     'Laravel',
     'Go',
     'Rust',
-    'Kotlin',
-    'Swift',
     'Kubernetes',
   ],
 };

@@ -53,16 +53,24 @@ function getValidationErrors(job) {
     return errors;
   }
 
-  // String fields
-  const stringFields = [
-    'title',
-    'company',
-    'location',
-    'salary_original',
-    'salary_currency',
-    'description',
-    'posted_at_raw',
-  ];
+  // --------------------------------------------------
+  // Title
+  // --------------------------------------------------
+
+  if (typeof job.title !== 'string' || !job.title.trim()) {
+    errors.push('title is required and must be a non-empty string');
+  } else {
+    const normalizedTitle = job.title.trim().toLowerCase();
+
+    const invalidNullStrings = ['null', 'undefined', 'none', 'n/a'];
+
+    if (invalidNullStrings.includes(normalizedTitle)) {
+      errors.push('title is required and must be a real job title');
+    }
+  }
+
+  // String fields other than title
+  const stringFields = ['company', 'location', 'salary_original', 'salary_currency', 'description', 'posted_at_raw'];
 
   for (const field of stringFields) {
     if (!isStringOrNull(job[field])) {

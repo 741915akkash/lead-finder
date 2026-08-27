@@ -1,7 +1,12 @@
 require('dotenv').config();
 
 const { processNextJob } = require('./jobs/process-job');
-const { recoverStaleJobs } = require('./repositories/jobs-repository');
+
+const {
+  recoverStaleJobs,
+  requeueFetchFailedJobs,
+  clearCompletedFetchErrors,
+} = require('./repositories/jobs-repository');
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -21,6 +26,29 @@ async function main() {
   console.log('');
   console.log('Waiting for jobs...');
   console.log('');
+
+  /*
+   * Clean up completed jobs that still contain an old
+   * "fetch failed" error.
+   */
+  try {
+    await clearCompletedFetchErrors();
+  } catch (err) {
+    console.error('Initial completed-job error cleanup failed:', err.message);
+  }
+
+  /*
+   * Requeue jobs from previous processor runs that
+   * permanently failed with a temporary Ollama/network
+   * "fetch failed" error.
+   *
+   * These jobs start over with attempt 1.
+   */
+  try {
+    await requeueFetchFailedJobs();
+  } catch (err) {
+    console.error('Initial fetch-failed job requeue failed:', err.message);
+  }
 
   /*
    * Recover jobs that may have been left in
