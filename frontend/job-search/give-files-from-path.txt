@@ -5,22 +5,31 @@ FILE: app/pages/index.vue
 ============================================================
 
 <script setup>
+import DataTable from '~/components/table/DataTable.vue';
+import TableFilters from '~/components/table/TableFilters.vue';
+import Pagination from '~/components/table/Pagination.vue';
+
 const search = ref('');
+
 const source = ref('');
+
 const status = ref('');
+
 const recommendation = ref('');
 
 const page = ref(1);
+
 const pageSize = ref(50);
 
 const sort = ref('fit_score');
+
 const order = ref('desc');
 
 const days = ref(30);
 
 const { data: filters } = await useFetch('/api/filters');
 
-const { data, pending, error } = await useFetch('/api/jobs', {
+const { data, pending, error, refresh } = await useFetch('/api/jobs', {
   query: {
     page,
     pageSize,
@@ -39,6 +48,7 @@ function handleSort(column) {
     order.value = order.value === 'asc' ? 'desc' : 'asc';
   } else {
     sort.value = column;
+
     order.value = 'desc';
   }
 }
@@ -47,9 +57,9 @@ watch([search, source, status, recommendation, days], () => {
   page.value = 1;
 });
 
-import DataTable from '~/components/table/DataTable.vue';
-import TableFilters from '~/components/table/TableFilters.vue';
-import Pagination from '~/components/table/Pagination.vue';
+async function handleApplicationSaved() {
+  await refresh();
+}
 </script>
 
 <template>
@@ -67,214 +77,22 @@ import Pagination from '~/components/table/Pagination.vue';
 
       <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
 
-      <DataTable :rows="data?.rows || []" :loading="pending" :sort="sort" :order="order" @sort="handleSort" />
+      <DataTable
+        :rows="data?.rows || []"
+        :loading="pending"
+        :sort="sort"
+        :order="order"
+        @sort="handleSort"
+        @application-saved="handleApplicationSaved"
+        @job-archived="handleApplicationSaved" />
 
       <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />
 
       <div v-if="error" class="mt-4 text-red-600">
-        {{ error }}
+        {{ error?.statusMessage || error?.message || 'Failed to load jobs.' }}
       </div>
     </div>
   </main>
-</template>
-
-
-============================================================
-FILE: app/components/table/DataTable.vue
-============================================================
-
-<script setup>
-defineProps({
-  rows: {
-    type: Array,
-    default: () => [],
-  },
-
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-
-  sort: {
-    type: String,
-  },
-
-  order: {
-    type: String,
-    default: 'desc',
-  },
-});
-
-const emit = defineEmits(['sort']);
-
-function formatScore(score) {
-  if (score === null || score === undefined) return '-';
-
-  return Math.round(score * 100);
-}
-
-function formatDate(date) {
-  if (!date) return '-';
-
-  return new Date(date).toLocaleDateString();
-}
-</script>
-
-<template>
-  <div class="overflow-x-auto rounded-xl border bg-white shadow-sm">
-    <table class="min-w-full">
-      <thead class="bg-gray-50">
-        <tr>
-          <th
-            class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
-            @click="emit('sort', 'fit_score')">
-            Fit
-          </th>
-
-          <th
-            class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
-            @click="emit('sort', 'priority_score')">
-            Priority
-          </th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Job</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Company</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Location</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Source</th>
-
-          <th class="px-4 py-3 text-left text-sm font-semibold">Recommendation</th>
-
-          <th
-            class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
-            @click="emit('sort', 'posted_at')">
-            Posted
-          </th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr v-for="row in rows" :key="row.id" class="border-t hover:bg-gray-50">
-          <td class="px-4 py-3 font-semibold">
-            {{ formatScore(row.fit_score) }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.priority_score ?? '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            <a
-              :href="row.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-medium text-gray-900 hover:text-blue-600 hover:underline">
-              {{ row.title }}
-            </a>
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.company || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.location || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.source || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ row.recommendation || '-' }}
-          </td>
-
-          <td class="px-4 py-3">
-            {{ formatDate(row.posted_at) }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</template>
-
-
-============================================================
-FILE: app/components/table/TableFilters.vue
-============================================================
-
-<script setup>
-const search = defineModel('search');
-const source = defineModel('source');
-const status = defineModel('status');
-const recommendation = defineModel('recommendation');
-const days = defineModel('days');
-
-defineProps({
-  filters: Object,
-});
-</script>
-
-<template>
-  <div class="mb-6 flex flex-wrap gap-3">
-    <input v-model="search" placeholder="Search jobs..." class="rounded-lg border px-3 py-2" />
-
-    <select v-model="source" class="rounded-lg border px-3 py-2">
-      <option value="">All Sources</option>
-
-      <option v-for="item in filters?.sources" :key="item" :value="item">
-        {{ item }}
-      </option>
-    </select>
-
-    <select v-model="recommendation" class="rounded-lg border px-3 py-2">
-      <option value="">All Recommendations</option>
-
-      <option v-for="item in filters?.recommendations" :key="item" :value="item">
-        {{ item }}
-      </option>
-    </select>
-
-    <select v-model="status" class="rounded-lg border px-3 py-2">
-      <option value="">All Statuses</option>
-
-      <option v-for="item in filters?.statuses" :key="item" :value="item">
-        {{ item }}
-      </option>
-    </select>
-
-    <input v-model.number="days" type="number" min="1" placeholder="Days" class="w-24 rounded-lg border px-3 py-2" />
-  </div>
-</template>
-
-
-============================================================
-FILE: app/components/table/Pagination.vue
-============================================================
-
-<script setup>
-defineProps({
-  page: Number,
-  totalPages: Number,
-});
-
-const emit = defineEmits(['update:page']);
-</script>
-
-<template>
-  <div v-if="totalPages > 1" class="flex justify-center py-4">
-    <div class="flex flex-wrap items-center justify-center gap-2">
-      <button
-        v-for="n in totalPages"
-        :key="n"
-        @click="$emit('update:page', n)"
-        :class="['rounded border px-3 py-2', n === page && 'bg-yellow-500 text-white']">
-        {{ n }}
-      </button>
-    </div>
-  </div>
 </template>
 
 
@@ -288,13 +106,17 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event);
 
   const search = query.search || '';
+
   const source = query.source || '';
+
   const status = query.status || '';
+
   const recommendation = query.recommendation || '';
 
   const days = Number(query.days || 30);
 
   const page = Number(query.page || 1);
+
   const pageSize = Number(query.pageSize || 50);
 
   const allowedSorts = ['fit_score', 'priority_score', 'posted_at'];
@@ -304,9 +126,11 @@ export default defineEventHandler(async (event) => {
   const order = query.order === 'asc' ? 'asc' : 'desc';
 
   const from = (page - 1) * pageSize;
+
   const to = from + pageSize - 1;
 
   const cutoff = new Date();
+
   cutoff.setDate(cutoff.getDate() - days);
 
   const supabase = getSupabase();
@@ -315,23 +139,29 @@ export default defineEventHandler(async (event) => {
     .from('job_postings')
     .select(
       `
-      id,
-      title,
-      company,
-      location,
-      url,
-      source,
-      status,
-      posted_at,
-      fit_score,
-      priority_score,
-      recommendation
-      `,
+            id,
+            title,
+            company,
+            location,
+            url,
+            apply_url,
+            source,
+            status,
+            posted_at,
+            fit_score,
+            priority_score,
+            recommendation,
+            archived,
+            archive_reason,
+            archive_note,
+            archived_at
+          `,
       {
         count: 'exact',
       },
     )
-    .or(`posted_at.gte.${cutoff.toISOString()},posted_at.is.null`);
+    .or(`posted_at.gte.${cutoff.toISOString()},posted_at.is.null`)
+    .eq('archived', false);
 
   if (search) {
     db = db.or(`title.ilike.%${search}%,company.ilike.%${search}%`);
@@ -352,6 +182,7 @@ export default defineEventHandler(async (event) => {
   const { data, count, error } = await db
     .order(sort, {
       ascending: order === 'asc',
+
       nullsFirst: false,
     })
     .range(from, to);
@@ -363,40 +194,106 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  const jobs = data || [];
+
+  const jobIds = jobs.map((job) => job.id);
+
+  let applications = [];
+
+  if (jobIds.length) {
+    const { data: applicationData, error: applicationError } = await supabase
+      .from('applications')
+      .select(
+        `
+              id,
+              job_posting_id,
+              status,
+              applied_at,
+              application_url,
+              resume_version,
+              notes,
+              created_at,
+              updated_at,
+
+              application_contacts (
+                id,
+                crm_lead_id,
+                crm_quiz_id,
+                created_at
+              )
+            `,
+      )
+      .in('job_posting_id', jobIds);
+
+    if (applicationError) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: applicationError.message,
+      });
+    }
+
+    applications = applicationData || [];
+  }
+
+  /*
+   * Collect every CRM contact ID
+   * across all applications.
+   */
+  const crmLeadIds = [
+    ...new Set(
+      applications
+        .flatMap((application) => application.application_contacts || [])
+        .map((contact) => contact.crm_lead_id)
+        .filter(Boolean),
+    ),
+  ];
+
+  let crmContacts = [];
+
+  if (crmLeadIds.length) {
+    crmContacts = await $fetch('/api/crm-contacts', {
+      query: {
+        ids: crmLeadIds.join(','),
+      },
+    });
+  }
+
+  const crmContactsById = new Map(crmContacts.map((contact) => [String(contact.id), contact]));
+
+  const applicationsByJobId = new Map(
+    applications.map((application) => {
+      const contacts = (application.application_contacts || [])
+        .map((link) => crmContactsById.get(String(link.crm_lead_id)))
+        .filter(Boolean);
+
+      return [
+        application.job_posting_id,
+
+        {
+          ...application,
+
+          contacts,
+        },
+      ];
+    }),
+  );
+
+  const rows = jobs.map((job) => ({
+    ...job,
+
+    application: applicationsByJobId.get(job.id) || null,
+  }));
+
   return {
     page,
     pageSize,
-    total: count,
-    totalPages: Math.ceil(count / pageSize),
-    rows: data || [],
+    total: count || 0,
+
+    totalPages: Math.ceil((count || 0) / pageSize),
+
+    rows,
+
     days,
-  };
-});
-
-
-============================================================
-FILE: server/api/filters.get.js
-============================================================
-
-import { getSupabase } from '../utils/supabase';
-
-export default defineEventHandler(async () => {
-  const supabase = getSupabase();
-
-  const [sources, statuses, recommendations] = await Promise.all([
-    supabase.from('job_postings').select('source').not('source', 'is', null),
-
-    supabase.from('job_postings').select('status').not('status', 'is', null),
-
-    supabase.from('job_postings').select('recommendation').not('recommendation', 'is', null),
-  ]);
-
-  return {
-    sources: [...new Set((sources.data || []).map((r) => r.source))].sort(),
-
-    statuses: [...new Set((statuses.data || []).map((r) => r.status))].sort(),
-
-    recommendations: [...new Set((recommendations.data || []).map((r) => r.recommendation))].sort(),
   };
 });
 
@@ -418,5 +315,109 @@ export function getSupabase() {
 
   return client;
 }
+
+
+============================================================
+FILE: server/api/applications/create.post.js
+============================================================
+
+import { getSupabase } from '../../utils/supabase';
+
+const ALLOWED_STATUSES = ['seen','applied', 'interview', 'offer', 'rejected'];
+
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event);
+
+  const jobPostingId = Number(body?.job_posting_id);
+
+  if (!Number.isInteger(jobPostingId)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid job_posting_id',
+    });
+  }
+
+  const status = body?.status || 'applied';
+
+  if (!ALLOWED_STATUSES.includes(status)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid application status',
+    });
+  }
+
+  const supabase = getSupabase();
+
+  /*
+   * Create application first.
+   */
+  const { data: application, error: applicationError } = await supabase
+    .from('applications')
+    .insert({
+      job_posting_id: jobPostingId,
+
+      status,
+
+      applied_at: body?.applied_at ? new Date(body.applied_at).toISOString() : new Date().toISOString(),
+
+      application_url: body?.application_url || null,
+
+      resume_version: body?.resume_version || null,
+
+      notes: body?.notes || null,
+    })
+    .select()
+    .single();
+
+  if (applicationError) {
+    if (applicationError.code === '23505') {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'An application already exists for this job',
+      });
+    }
+
+    throw createError({
+      statusCode: 500,
+      statusMessage: applicationError.message,
+    });
+  }
+
+  /*
+   * Then create zero or more
+   * application/contact links.
+   */
+  const contacts = Array.isArray(body?.contacts) ? body.contacts : [];
+
+  if (contacts.length) {
+    const rows = contacts
+      .map((contact) => ({
+        application_id: application.id,
+
+        crm_lead_id: Number(contact.crm_lead_id),
+
+        crm_quiz_id: contact.crm_quiz_id || null,
+      }))
+      .filter((contact) => Number.isInteger(contact.crm_lead_id));
+
+    if (rows.length) {
+      const { error: contactsError } = await supabase.from('application_contacts').insert(rows);
+
+      if (contactsError) {
+        /*
+         * Don't leave a half-created application.
+         */
+        await supabase.from('applications').delete().eq('id', application.id);
+
+        throw createError({
+          statusCode: 500,
+          statusMessage: contactsError.message,
+        });
+      }
+    }
+  }
+
+  return application;
+});
 
 

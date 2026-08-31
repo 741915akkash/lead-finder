@@ -153,6 +153,16 @@ function handleNoteKeydown(event, row) {
 function selectRow(row) {
   activeRowId.value = row.id;
 }
+
+function openPacket(row, type) {
+  if (!row?.id) {
+    return;
+  }
+
+  window.open(`/packets/${row.id}/${type}`, '_blank', 'noopener,noreferrer');
+
+  selectRow(row);
+}
 </script>
 
 <template>
@@ -173,6 +183,8 @@ function selectRow(row) {
           <th class="px-4 py-3 text-left text-sm font-semibold">Job</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Company</th>
+
+          <th class="px-4 py-3 text-left text-sm font-semibold">Packets</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Archive</th>
         </tr>
@@ -261,6 +273,30 @@ function selectRow(row) {
             {{ row.company || '-' }}
           </td>
 
+          <!-- PACKETS -->
+
+          <td class="px-4 py-3">
+            <div class="flex gap-2">
+              <button
+                v-if="row.application_packet"
+                type="button"
+                class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                @click="openPacket(row, 'application')">
+                Resume
+              </button>
+
+              <button
+                v-if="row.networking_packet"
+                type="button"
+                class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                @click="openPacket(row, 'networking')">
+                Network
+              </button>
+
+              <span v-if="!row.application_packet && !row.networking_packet" class="text-sm text-gray-400"> - </span>
+            </div>
+          </td>
+
           <!-- ARCHIVE -->
 
           <td class="px-4 py-3">
@@ -277,11 +313,11 @@ function selectRow(row) {
         </tr>
 
         <tr v-if="!loading && !rows.length">
-          <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
+          <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
         </tr>
 
         <tr v-if="loading">
-          <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
+          <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
         </tr>
       </tbody>
     </table>

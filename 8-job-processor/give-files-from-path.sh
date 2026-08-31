@@ -3,8 +3,9 @@
 OUTPUT="give-files-from-path.txt"
 
 FILES=(
-src/jobs/process-job.js
-src/ai/company-score.js
+src/ai/technology-registry.js
+src/ai/extract-technologies.js
+src/ai/technology-score.js
 )
 
 > "$OUTPUT"

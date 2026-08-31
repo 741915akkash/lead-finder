@@ -52,7 +52,9 @@ export default defineEventHandler(async (event) => {
             archived,
             archive_reason,
             archive_note,
-            archived_at
+            archived_at,
+            application_packet,
+            networking_packet
           `,
       {
         count: 'exact',

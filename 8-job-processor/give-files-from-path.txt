@@ -1,392 +1,492 @@
 # Review Files
 
 ============================================================
-FILE: src/jobs/process-job.js
+FILE: src/ai/technology-registry.js
 ============================================================
 
-const { correctSalary } = require('../normalizers/salary');
-const { claimJob } = require('../queue/claim-job');
-const { completeJob } = require('../queue/complete-job');
-const { failJob } = require('../queue/fail-job');
+const TECHNOLOGY_REGISTRY = {
+  // JavaScript / full-stack stacks
 
-const { getJobPostingById, updateParsedJob, updateJobAnalysis } = require('../repositories/job-postings-repository');
+  MERN: ['mern'],
 
-const { parseJob } = require('../ai/parse-job');
-const { analyzeJob } = require('../ai/analyze-job');
+  MEVN: ['mevn'],
 
-const { calculateTechnologyScore } = require('../ai/technology-score');
-const { calculateCompanyScore } = require('../ai/company-score');
-const { calculateSalaryScore } = require('../normalizers/salary-score');
+  PERN: ['pern'],
 
-const { TARGET_ROLE } = require('../config/target-role');
-const { resolvePostedAt } = require('../normalizers/posted-at');
+  Nuxt: ['nuxt', 'nuxt.js'],
 
-function calculateFinalScore(technologyResult, companyScore, salaryScore) {
-  if (technologyResult?.score == null || salaryScore == null) {
-    return null;
-  }
+  'Node.js': ['node.js', 'nodejs', 'node'],
 
-  /*
-   * Company quality only matters when the core
-   * required technology stack is sufficiently familiar.
-   */
+  'Express.js': ['express.js', 'expressjs', 'express'],
 
-  const coreTechnologyScore = technologyResult.required_score;
+  'REST APIs': [
+    'rest api',
+    'rest apis',
+    'restful api',
+    'restful apis',
+  ],
 
-  const effectiveCompanyScore = coreTechnologyScore != null && coreTechnologyScore >= 0.5 ? companyScore : 0;
+  // Databases
 
-  return technologyResult.score * 0.5 + effectiveCompanyScore * 0.25 + salaryScore * 0.25;
+  PostgreSQL: ['postgresql', 'postgres'],
+
+  MySQL: ['mysql'],
+
+  MongoDB: ['mongodb', 'mongo'],
+
+  Supabase: ['supabase'],
+
+  // AI / LLM
+
+  'OpenAI API': [
+    'openai api',
+    'openai apis',
+  ],
+
+  Ollama: ['ollama'],
+
+  'LLM APIs': [
+    'llm',
+    'llms',
+    'llm api',
+    'llm apis',
+    'large language model',
+    'large language models',
+    'ai/llm',
+    'ai/llm api',
+    'ai/llm apis',
+  ],
+
+  RAG: [
+    'rag',
+    'retrieval augmented generation',
+    'retrieval-augmented generation',
+  ],
+
+  'Vector databases': [
+    'vector database',
+    'vector databases',
+  ],
+
+  pgvector: ['pgvector'],
+
+  'AI agents': [
+    'ai agent',
+    'ai agents',
+  ],
+
+  Embeddings: [
+    'embedding',
+    'embeddings',
+  ],
+
+  // Infrastructure / deployment
+
+  AWS: [
+    'aws',
+    'amazon web services',
+  ],
+
+  Docker: ['docker'],
+
+  Railway: ['railway'],
+
+  Vercel: ['vercel'],
+
+  // Development tools
+
+  Git: ['git'],
+
+  GitHub: ['github'],
+
+  'GitHub Actions': ['github actions'],
+
+  Linux: ['linux'],
+
+  // Common technologies we need to recognize
+  // even though they are not in the familiar stack
+
+  React: ['react'],
+
+  'Next.js': [
+    'next.js',
+    'nextjs',
+    'next',
+  ],
+
+  TypeScript: [
+    'typescript',
+    'ts',
+  ],
+
+  Python: ['python'],
+
+  FastAPI: ['fastapi'],
+
+  Kubernetes: [
+    'kubernetes',
+    'k8s',
+  ],
+
+  Celery: ['celery'],
+
+  Ray: ['ray'],
+
+  Dask: ['dask'],
+
+  NumPy: ['numpy'],
+
+  SciPy: ['scipy'],
+
+  pandas: ['pandas'],
+
+  'React Flow': ['react flow'],
+
+  D3: [
+    'd3.js',
+    'd3',
+  ],
+
+  WebGL: ['webgl'],
+};
+
+const FAMILIAR_TECHNOLOGIES = new Set([
+  'MERN',
+  'MEVN',
+  'PERN',
+  'Nuxt',
+  'Node.js',
+  'Express.js',
+  'REST APIs',
+
+  'PostgreSQL',
+  'MySQL',
+  'MongoDB',
+  'Supabase',
+
+  'OpenAI API',
+  'Ollama',
+  'LLM APIs',
+  'RAG',
+  'Vector databases',
+  'pgvector',
+  'AI agents',
+  'Embeddings',
+
+  'AWS',
+  'Docker',
+  'Railway',
+  'Vercel',
+
+  'Git',
+  'GitHub',
+  'GitHub Actions',
+  'Linux',
+]);
+
+module.exports = {
+  TECHNOLOGY_REGISTRY,
+  FAMILIAR_TECHNOLOGIES,
+};
+
+============================================================
+FILE: src/ai/extract-technologies.js
+============================================================
+
+const { TECHNOLOGY_REGISTRY } = require('./technology-registry');
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function getRecommendation(score) {
-  if (score == null) {
-    return 'insufficient_data';
-  }
-
-  if (score >= 0.75) {
-    return 'high_priority';
-  }
-
-  if (score >= 0.6) {
-    return 'consider';
-  }
-
-  if (score >= 0.45) {
-    return 'low_priority';
-  }
-
-  return 'skip';
+function normalizeText(text) {
+  return text.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-function buildRedFlags({ role, technology, company, salary }) {
-  const redFlags = [];
+function containsTechnology(text, alias) {
+  const normalizedText = normalizeText(text);
+  const normalizedAlias = normalizeText(alias);
 
-  if (role.label === 'unrelated') {
-    redFlags.push('Role is unrelated to the target role');
-  }
+  const escaped = escapeRegex(normalizedAlias);
 
-  if (role.label === 'adjacent') {
-    redFlags.push('Role is adjacent rather than a direct match');
-  }
+  const pattern = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i');
 
-  if (technology.score != null && technology.score < 0.3) {
-    redFlags.push('Most required technologies are unfamiliar');
-  }
-
-  if (technology.score != null && technology.score >= 0.3 && technology.score < 0.5) {
-    redFlags.push('Technology stack has substantial unfamiliarity');
-  }
-
-  if (salary.label === 'below_minimum') {
-    redFlags.push('Salary is below target minimum');
-  }
-
-  if (company.label === 'mismatch') {
-    redFlags.push('Company profile does not match target preference');
-  }
-
-  return redFlags;
+  return pattern.test(normalizedText);
 }
 
-function buildAiReason({ analysis, technology, company, salary }) {
-  return [
-    analysis.role?.reason,
-    analysis.technology?.reason,
-    analysis.company?.reason,
-
-    `Technology score: ${technology.score ?? 'unknown'} (${technology.label}).`,
-    `Company score: ${company.score ?? 'unknown'} (${company.label}).`,
-    `Salary score: ${salary.score ?? 'unknown'} (${salary.label}).`,
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
-
-async function processNextJob() {
-  const job = await claimJob();
-
-  if (!job) {
-    return false;
+function extractTechnologies(text) {
+  if (!text || typeof text !== 'string') {
+    return [];
   }
 
-  try {
-    const jobPostingId = job.payload?.job_posting_id;
+  const found = [];
 
-    if (!jobPostingId) {
-      throw new Error('Missing job_posting_id in job payload');
+  for (const [technology, aliases] of Object.entries(TECHNOLOGY_REGISTRY)) {
+    const sortedAliases = [...aliases].sort((a, b) => b.length - a.length);
+
+    const matched = sortedAliases.some((alias) => containsTechnology(text, alias));
+
+    if (matched) {
+      found.push(technology);
     }
-
-    const jobPosting = await getJobPostingById(jobPostingId);
-
-    if (!jobPosting) {
-      throw new Error(`Job posting ${jobPostingId} not found`);
-    }
-
-    /*
-     * IDEMPOTENCY GUARD
-     *
-     * A duplicate queue item must never cause an already
-     * analyzed job to be parsed/analyzed again.
-     */
-
-    if (jobPosting.status === 'analyzed') {
-      console.log(`Job posting ${jobPosting.id} is already analyzed. Skipping.`);
-
-      await completeJob(job.id, {
-        job_posting_id: jobPosting.id,
-        skipped: true,
-        reason: 'already_analyzed',
-      });
-
-      return true;
-    }
-
-    if (!jobPosting.raw_text) {
-      throw new Error(`Job posting ${jobPostingId} has no raw_text`);
-    }
-
-    console.log(`Processing job posting: ${jobPosting.id}`);
-    console.log(`Title: ${jobPosting.title}`);
-    console.log(`Source: ${jobPosting.source}`);
-
-    // --------------------------------------------
-    // Stage 1: Parse
-    // --------------------------------------------
-
-    const parsedJob = await parseJob(jobPosting.raw_text);
-
-    console.log('✓ Job parsed and validated');
-
-    // --------------------------------------------
-    // Correct salary normalization
-    // --------------------------------------------
-
-    const correctedJob = correctSalary(parsedJob);
-
-    if (correctedJob.salary_min !== parsedJob.salary_min || correctedJob.salary_max !== parsedJob.salary_max) {
-      console.log(
-        `Salary corrected: ${parsedJob.salary_min}–${parsedJob.salary_max} → ${correctedJob.salary_min}–${correctedJob.salary_max}`,
-      );
-    }
-
-    // --------------------------------------------
-    // Resolve relative posting date
-    // --------------------------------------------
-
-    const postedAt = resolvePostedAt(correctedJob.posted_at_raw, jobPosting.discovered_at);
-
-    console.log(`Posted date: ${correctedJob.posted_at_raw ?? 'unknown'} → ${postedAt ?? 'null'}`);
-
-    // --------------------------------------------
-    // Save Stage 1
-    // --------------------------------------------
-
-    const updatedJob = await updateParsedJob(jobPosting.id, correctedJob, postedAt);
-
-    console.log(`✓ Updated job posting: ${updatedJob.id}`);
-
-    // --------------------------------------------
-    // Stage 2: AI analysis
-    // --------------------------------------------
-
-    console.log('Starting Stage 2 analysis...');
-
-    const analysis = await analyzeJob(updatedJob, TARGET_ROLE);
-
-    console.log('✓ Job analyzed');
-
-    // --------------------------------------------
-    // Deterministic scoring
-    // --------------------------------------------
-
-    const technologyResult = calculateTechnologyScore(analysis.technology);
-
-    const companyResult = calculateCompanyScore(analysis.company);
-
-    const salaryResult = calculateSalaryScore(updatedJob.salary_min);
-
-    const finalScore = calculateFinalScore(technologyResult, companyResult.score, salaryResult.score);
-
-    const recommendation = getRecommendation(finalScore);
-
-    const redFlags = buildRedFlags({
-      role: analysis.role,
-      technology: technologyResult,
-      company: companyResult,
-      salary: salaryResult,
-    });
-
-    const aiReason = buildAiReason({
-      analysis,
-      technology: technologyResult,
-      company: companyResult,
-      salary: salaryResult,
-    });
-
-    console.log('--------------------------------------');
-    console.log('STAGE 2 SCORING');
-    console.log('--------------------------------------');
-
-    console.log(`Role: ${analysis.role.label}`);
-
-    console.log(`Technology: ${technologyResult.score} (${technologyResult.label})`);
-
-    console.log(`Company: ${companyResult.score} (${companyResult.label})`);
-
-    console.log(`Salary: ${salaryResult.score} (${salaryResult.label})`);
-
-    console.log(`Fit score: ${finalScore}`);
-    console.log(`Recommendation: ${recommendation}`);
-
-    if (redFlags.length > 0) {
-      console.log(`Red flags: ${redFlags.join('; ')}`);
-    } else {
-      console.log('Red flags: none');
-    }
-
-    // --------------------------------------------
-    // Save Stage 2
-    // --------------------------------------------
-
-    const analyzedJob = await updateJobAnalysis(jobPosting.id, {
-      fit_score: finalScore,
-      recommendation,
-      ai_reason: aiReason,
-      ai_red_flags: redFlags,
-    });
-
-    console.log(`✓ Saved Stage 2 analysis: ${analyzedJob.id}`);
-
-    // --------------------------------------------
-    // Complete queue job
-    // --------------------------------------------
-
-    const result = {
-      job_posting_id: jobPosting.id,
-
-      parsed_job: correctedJob,
-      posted_at: postedAt,
-
-      analysis,
-
-      scores: {
-        technology: technologyResult,
-        company: companyResult,
-        salary: salaryResult,
-        final: finalScore,
-      },
-
-      recommendation,
-      red_flags: redFlags,
-    };
-
-    await completeJob(job.id, result);
-
-    console.log(`✓ Completed processing job: ${job.id}`);
-
-    return true;
-  } catch (err) {
-    console.error(`✗ Job ${job.id} failed:`, err.message);
-
-    try {
-      await failJob(job.id, err.message);
-    } catch (failError) {
-      console.error(`✗ Failed to mark job ${job.id} as failed:`, failError.message);
-    }
-
-    return false;
   }
+
+  return found;
 }
 
 module.exports = {
-  processNextJob,
-  calculateFinalScore,
-  getRecommendation,
-  buildRedFlags,
-  buildAiReason,
+  extractTechnologies,
 };
 
 
 ============================================================
-FILE: src/ai/company-score.js
+FILE: src/ai/technology-score.js
 ============================================================
 
-const STAGE_SCORES = {
-  'pre-seed': 1.0,
-  seed: 1.0,
-  'early-stage': 1.0,
-  growth: 0.5,
-  enterprise: 0.0,
-};
+const { TECHNOLOGY_POLICY, TECHNOLOGY_ALIASES } = require('../config/target-role');
 
-const SIZE_SCORES = {
-  '1-10': 1.0,
-  '11-50': 1.0,
-  '51-200': 0.7,
-  '201-500': 0.4,
-  '501-1000': 0.2,
-  '1001+': 0.0,
-};
+const REQUIRED_WEIGHT = 0.7;
+const NICE_TO_HAVE_WEIGHT = 0.3;
 
-function calculateCompanyScore(company) {
-  const stageScore = STAGE_SCORES[company?.stage_label];
-  const sizeScore = SIZE_SCORES[company?.size_label];
+function normalize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+}
 
-  const hasStage = Number.isFinite(stageScore);
-  const hasSize = Number.isFinite(sizeScore);
+function buildTechnologySet(values = []) {
+  return new Set(values.map(normalize));
+}
 
-  if (!hasStage && !hasSize) {
+const FAMILIAR = buildTechnologySet(TECHNOLOGY_POLICY.familiar);
+const LEARN_QUICKLY = buildTechnologySet(TECHNOLOGY_POLICY.learn_quickly);
+const EXCLUDED = buildTechnologySet(TECHNOLOGY_POLICY.excluded);
+const ALIASES = Object.fromEntries(
+  Object.entries(TECHNOLOGY_ALIASES || {}).map(([alias, technologies]) => [normalize(alias), technologies]),
+);
+
+function getFamiliarity(technology) {
+  if (typeof technology !== 'string') {
+    return 0;
+  }
+
+  const normalized = normalize(technology);
+
+  if (FAMILIAR.has(normalized)) {
+    return 1;
+  }
+
+  if (LEARN_QUICKLY.has(normalized)) {
+    return 0.8;
+  }
+
+  return 0;
+}
+
+function getTechnologyComponents(technology) {
+  if (typeof technology !== 'string') {
+    return null;
+  }
+
+  return ALIASES[normalize(technology)] || null;
+}
+
+/*
+ * Determine whether the required technology stack is acceptable.
+ *
+ * A required technology that is explicitly excluded is a hard
+ * failure. Technologies that are familiar or learnable pass.
+ */
+function checkTechnologyGate(required = []) {
+  if (!Array.isArray(required) || required.length === 0) {
     return {
-      score: null,
-      label: 'unknown',
+      passed: true,
+      reason: 'No required technologies identified.',
+      excluded: [],
+      learn_quickly: [],
+      familiar: [],
     };
   }
 
-  if (hasStage && !hasSize) {
-    return {
-      score: stageScore,
-      label: getCompanyLabel(stageScore),
-    };
+  const excluded = [];
+  const learnQuickly = [];
+  const familiar = [];
+
+  for (const technology of required) {
+    const normalized = normalize(technology);
+
+    const components = getTechnologyComponents(technology);
+
+    if (components) {
+      for (const component of components) {
+        const componentNormalized = normalize(component);
+
+        if (EXCLUDED.has(componentNormalized)) {
+          excluded.push(component);
+        } else if (LEARN_QUICKLY.has(componentNormalized)) {
+          learnQuickly.push(component);
+        } else if (FAMILIAR.has(componentNormalized)) {
+          familiar.push(component);
+        }
+      }
+
+      continue;
+    }
+
+    if (EXCLUDED.has(normalized)) {
+      excluded.push(technology);
+      continue;
+    }
+
+    if (LEARN_QUICKLY.has(normalized)) {
+      learnQuickly.push(technology);
+      continue;
+    }
+
+    if (FAMILIAR.has(normalized)) {
+      familiar.push(technology);
+    }
   }
 
-  if (!hasStage && hasSize) {
+  if (excluded.length > 0) {
     return {
-      score: sizeScore,
-      label: getCompanyLabel(sizeScore),
+      passed: false,
+      reason: `Required technology is excluded: ${excluded.join(', ')}.`,
+      excluded,
+      learn_quickly: learnQuickly,
+      familiar,
     };
   }
-
-  const score = stageScore * 0.7 + sizeScore * 0.3;
 
   return {
-    score,
-    label: getCompanyLabel(score),
+    passed: true,
+    reason: 'Required technology stack is compatible with the technology policy.',
+    excluded,
+    learn_quickly: learnQuickly,
+    familiar,
   };
 }
 
-function getCompanyLabel(score) {
+function calculateBucketScore(technologies) {
+  if (!Array.isArray(technologies) || technologies.length === 0) {
+    return null;
+  }
+
+  const total = technologies.reduce((sum, technology) => {
+    return sum + getFamiliarity(technology);
+  }, 0);
+
+  return total / technologies.length;
+}
+
+function calculateTechnologyScore(analysis) {
+  const required = Array.isArray(analysis?.required) ? analysis.required : [];
+
+  const niceToHave = Array.isArray(analysis?.nice_to_have) ? analysis.nice_to_have : [];
+
+  if (required.length === 0 && niceToHave.length === 0) {
+    return {
+      score: null,
+      required_score: null,
+      label: 'unknown',
+
+      eligible: true,
+      gate_passed: true,
+      gate_reason: 'No required technologies identified.',
+      excluded_required: [],
+      learn_quickly_required: [],
+      familiar_required: [],
+    };
+  }
+
+  const gate = checkTechnologyGate(required);
+
+  /*
+   * Calculate the normal technology score even when the gate fails.
+   * This keeps the raw technology score useful for diagnostics.
+   */
+  const requiredScore = required.length > 0 ? calculateBucketScore(required) : null;
+
+  const niceToHaveScore = niceToHave.length > 0 ? calculateBucketScore(niceToHave) : null;
+
+  let score;
+
+  if (requiredScore != null && niceToHaveScore != null) {
+    score = requiredScore * REQUIRED_WEIGHT + niceToHaveScore * NICE_TO_HAVE_WEIGHT;
+  } else if (requiredScore != null) {
+    score = requiredScore;
+  } else {
+    score = niceToHaveScore;
+  }
+
+  /*
+   * Hard technology gate.
+   *
+   * If an explicitly excluded technology is required,
+   * the job is not eligible for normal fit scoring.
+   */
+  if (!gate.passed) {
+    return {
+      score,
+      required_score: requiredScore,
+      label: getTechnologyLabel(score),
+
+      eligible: false,
+      gate_passed: false,
+      gate_reason: gate.reason,
+      excluded_required: gate.excluded,
+      learn_quickly_required: gate.learn_quickly,
+      familiar_required: gate.familiar,
+    };
+  }
+
+  return {
+    score,
+    required_score: requiredScore,
+    label: getTechnologyLabel(score),
+
+    eligible: true,
+    gate_passed: true,
+    gate_reason: gate.reason,
+    excluded_required: gate.excluded,
+    learn_quickly_required: gate.learn_quickly,
+    familiar_required: gate.familiar,
+  };
+}
+
+function getTechnologyLabel(score) {
   if (score == null) {
     return 'unknown';
   }
 
   if (score >= 0.85) {
-    return 'strong_match';
+    return 'highly_familiar';
   }
 
-  if (score >= 0.6) {
-    return 'reasonable_match';
+  if (score >= 0.7) {
+    return 'strong_familiarity';
+  }
+
+  if (score >= 0.5) {
+    return 'mixed';
   }
 
   if (score >= 0.3) {
-    return 'weak_match';
+    return 'mostly_unfamiliar';
   }
 
-  return 'poor_match';
+  return 'unfamiliar';
 }
 
 module.exports = {
-  calculateCompanyScore,
-  getCompanyLabel,
+  calculateTechnologyScore,
+  calculateBucketScore,
+  getFamiliarity,
+  getTechnologyLabel,
+  checkTechnologyGate,
+  REQUIRED_WEIGHT,
+  NICE_TO_HAVE_WEIGHT,
 };
 
 
