@@ -73,8 +73,42 @@ async function updateJobAnalysis(id, analysis) {
   return data;
 }
 
+async function getJobsMissingPostedAt() {
+  const { data, error } = await supabase
+    .from('job_postings')
+    .select('id, raw_text, discovered_at, title, company')
+    .is('posted_at', null)
+    .order('id', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
+async function updatePostedAt(id, postedAt) {
+  const { data, error } = await supabase
+    .from('job_postings')
+    .update({
+      posted_at: postedAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
   getJobPostingById,
   updateParsedJob,
   updateJobAnalysis,
+  getJobsMissingPostedAt,
+  updatePostedAt,
 };

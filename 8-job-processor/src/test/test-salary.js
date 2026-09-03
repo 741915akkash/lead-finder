@@ -1,4 +1,4 @@
-const { correctSalary } = require('./normalizers/salary');
+const { correctSalary } = require('../normalizers/salary');
 
 function assertEqual(actual, expected, message) {
   if (actual !== expected) {

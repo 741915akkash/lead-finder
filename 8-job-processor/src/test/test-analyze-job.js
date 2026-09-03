@@ -1,5 +1,5 @@
-const { analyzeJob } = require('./ai/analyze-job');
-const { getValidationErrors } = require('./ai/validate-job-analysis');
+const { analyzeJob } = require('../ai/analyze-job');
+const { getValidationErrors } = require('../ai/validate-job-analysis');
 
 const targetRole = `
 I am looking for early-stage startup roles where I can work as

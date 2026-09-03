@@ -1,4 +1,4 @@
-const { calculateSalaryScore } = require('./normalizers/salary-score');
+const { calculateSalaryScore } = require('../normalizers/salary-score');
 
 function assertEqual(actual, expected, message) {
   if (actual !== expected) {

@@ -1,4 +1,4 @@
-const { validateParsedJob } = require('./ai/validate-parsed-job');
+const { validateParsedJob } = require('../ai/validate-parsed-job');
 
 function test(name, job, shouldPass) {
   try {

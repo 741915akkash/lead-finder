@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const { getJobPostingById } = require('./repositories/job-postings-repository');
-const { parseJob } = require('./ai/parse-job');
+const { getJobPostingById } = require('../repositories/job-postings-repository');
+const { parseJob } = require('../ai/parse-job');
 
 async function main() {
   const job = await getJobPostingById(91);

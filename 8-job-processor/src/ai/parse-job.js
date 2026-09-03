@@ -110,14 +110,6 @@ function normalizeWorkplaceType(value) {
 
   /*
    * Ambiguous combinations must not be guessed.
-   *
-   * Example:
-   * "onsite or remote"
-   * "remote or onsite"
-   * "remote/onsite"
-   *
-   * If the posting does not establish one specific workplace type,
-   * store null.
    */
   if (normalized.includes('remote') && normalized.includes('onsite')) {
     return null;
@@ -138,33 +130,121 @@ function normalizeWorkplaceType(value) {
  * Extract the original posting-date expression directly from
  * the raw job posting.
  *
- * Examples:
- *   "Posted 6 days ago"     → "6 days ago"
- *   "Posted yesterday"      → "yesterday"
- *   "Posted today"          → "today"
- *   "Posted 2 weeks ago"    → "2 weeks ago"
+ * IMPORTANT:
  *
- * This is deterministic and avoids asking the LLM to repair
- * a simple field that can be extracted directly from the source.
+ * This function deliberately looks for DATE CONTEXT rather than
+ * simply looking for any date in the document.
+ *
+ * Job descriptions contain many unrelated dates:
+ *
+ *   - application deadlines
+ *   - interview dates
+ *   - start dates
+ *   - years of experience
+ *   - product/company history
+ *   - dates mentioned in benefits
+ *
+ * Only dates associated with posting/listing/publication language
+ * are considered posting dates.
  */
 function extractPostedAtRaw(rawText) {
   if (!rawText || typeof rawText !== 'string') {
     return null;
   }
 
-  const patterns = [
-    /\bPosted\s+((?:\d+\s+)?(?:minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)\s+ago)\b/i,
-    /\bPosted\s+(today|yesterday)\b/i,
+  const text = rawText.replace(/\r\n/g, '\n');
+
+  /*
+   * Relative dates.
+   *
+   * Examples:
+   *   Posted 6 days ago
+   *   Posted 1 day ago
+   *   Posted 3 hours ago
+   *   Posted 20 minutes ago
+   *   Posted yesterday
+   *   Posted today
+   *   Listed 4 days ago
+   *   Published 2 weeks ago
+   *   3 days ago
+   *
+   * The optional "about/approximately/over" wording is accepted,
+   * but the returned value remains normalized to the useful
+   * date expression.
+   */
+  const relativePatterns = [
+    /\b(?:posted|listed|published|added|created)\s*:?\s*(?:(?:about|approximately|around|over)\s+)?(\d+\s+(?:minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)\s+ago)\b/i,
+
+    /\b(?:posted|listed|published|added|created)\s*:?\s*(today|yesterday)\b/i,
+
+    /\b(?:posted|listed|published|added)\s*:?\s*(\d+\+?\s+(?:day|days|week|weeks|month|months|year|years)\s+ago)\b/i,
   ];
 
-  for (const pattern of patterns) {
-    const match = rawText.match(pattern);
+  for (const pattern of relativePatterns) {
+    const match = text.match(pattern);
 
     if (match) {
       return match[1].trim();
     }
   }
 
+  /*
+   * Explicit dates associated with posting language.
+   *
+   * Examples:
+   *   Posted: Aug 28, 2026
+   *   Posted on August 28, 2026
+   *   Posted August 28, 2026
+   *   Published: September 1, 2026
+   *   Date posted: 2026-08-28
+   *   Job posted: 28 August 2026
+   *
+   * Keep the original date expression rather than converting it
+   * here. resolvePostedAt() owns normalization.
+   */
+  const explicitPatterns = [
+    /\b(?:date\s+posted|posting\s+date|posted\s+on|posted|job\s+posted|published\s+on|published|listed\s+on|listed)\s*:?\s*((?:\d{4}[-/]\d{1,2}[-/]\d{1,2})|(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(?:\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{4})|(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?(?:,)?\s+\d{4}))\b/i,
+  ];
+
+  for (const pattern of explicitPatterns) {
+    const match = text.match(pattern);
+
+    if (match) {
+      return match[1].trim();
+    }
+  }
+
+  /*
+   * Some sources use:
+   *
+   *   Date posted
+   *   28 Aug 2026
+   *
+   * where the date is on the following line.
+   */
+  const multilineExplicitPatterns = [
+    /\b(?:date\s+posted|posting\s+date|posted\s+on|job\s+posted|published\s+on|listed\s+on)\s*:?\s*\n\s*((?:\d{4}[-/]\d{1,2}[-/]\d{1,2})|(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(?:\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{4})|(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?(?:,)?\s+\d{4}))\b/i,
+  ];
+
+  for (const pattern of multilineExplicitPatterns) {
+    const match = text.match(pattern);
+
+    if (match) {
+      return match[1].trim();
+    }
+  }
+
+  /*
+   * Do NOT return arbitrary dates.
+   *
+   * For example:
+   *
+   *   Apply by September 15, 2026
+   *   Join us in October 2026
+   *   Founded in 2018
+   *
+   * must not become posted_at_raw.
+   */
   return null;
 }
 
@@ -179,19 +259,27 @@ function normalizeParsedJob(job, rawText) {
   };
 
   /*
-   * posted_at_raw is deterministic when the source contains
-   * an explicit "Posted ..." expression.
+   * Deterministic extraction is authoritative.
    *
-   * Use the model's value when it exists.
-   * If the model omitted it, recover it from the raw posting.
-   * If neither exists, keep it as null.
+   * If the raw posting contains a recognizable posting-date
+   * expression, ALWAYS use it.
+   *
+   * This prevents the LLM from selecting an unrelated date
+   * such as an application deadline or start date.
+   *
+   * If deterministic extraction cannot find one, preserve the
+   * model's value as a fallback.
    */
-  if (
+  const extractedPostedAtRaw = extractPostedAtRaw(rawText);
+
+  if (extractedPostedAtRaw) {
+    normalizedJob.posted_at_raw = extractedPostedAtRaw;
+  } else if (
     normalizedJob.posted_at_raw === undefined ||
     normalizedJob.posted_at_raw === null ||
     (typeof normalizedJob.posted_at_raw === 'string' && !normalizedJob.posted_at_raw.trim())
   ) {
-    normalizedJob.posted_at_raw = extractPostedAtRaw(rawText);
+    normalizedJob.posted_at_raw = null;
   }
 
   return normalizedJob;
@@ -227,8 +315,17 @@ IMPORTANT PARSING RULES:
 - Never return values such as "onsite or remote", "remote or onsite", "remote/onsite", or "onsite/remote".
 - If the posting does not establish one specific workplace type, return null.
 - Do not guess.
-- posted_at_raw should contain the original posting-date expression exactly as it appears in the job posting, such as "6 days ago", "yesterday", or "today".
-- If there is no posting date, return null for posted_at_raw.
+- posted_at_raw must contain ONLY a posting/listing/publication date expression.
+- Do not use application deadlines, closing dates, interview dates, start dates, company founding dates, or dates mentioned in the job description.
+- Preserve the original expression where possible, such as:
+  - "6 days ago"
+  - "yesterday"
+  - "today"
+  - "August 28, 2026"
+  - "28 August 2026"
+  - "2026-08-28"
+- Do not calculate or convert posted_at_raw.
+- If there is no identifiable posting date, return null for posted_at_raw.
 
 <RAW_JOB_TEXT>
 ${rawText}
@@ -241,14 +338,12 @@ ${rawText}
   let parsedJob = firstResult.parsed;
   let validationErrors = [];
 
-  // JSON parsing failed
   if (firstResult.error) {
     console.log('Parser returned invalid JSON:');
     console.log(`- ${firstResult.error}`);
   } else {
     parsedJob = normalizeParsedJob(parsedJob, rawText);
 
-    // JSON parsed successfully, now validate it
     validationErrors = getValidationErrors(parsedJob);
 
     if (validationErrors.length === 0) {
@@ -323,10 +418,24 @@ WORKPLACE TYPE RULE:
 
 POSTING DATE RULE:
 
-- posted_at_raw should contain the original posting-date expression from the job posting.
-- Examples: "6 days ago", "yesterday", "today".
-- If there is no posting date, return null.
+- posted_at_raw must refer ONLY to when the job was posted, listed, added, or published.
+- Do not use an application deadline.
+- Do not use a closing date.
+- Do not use an interview date.
+- Do not use a start date.
+- Do not use a company founding date.
+- Do not use a year of experience.
+- Do not use another unrelated date mentioned in the description.
+- Preserve the original posting-date expression.
+- Examples:
+  "6 days ago"
+  "yesterday"
+  "today"
+  "August 28, 2026"
+  "28 August 2026"
+  "2026-08-28"
 - Do not calculate or convert posted_at_raw.
+- If there is no identifiable posting date, return null.
 
 NULL VALUES ARE JSON VALUES, NOT STRINGS.
 

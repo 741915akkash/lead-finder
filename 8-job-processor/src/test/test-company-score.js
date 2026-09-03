@@ -1,4 +1,4 @@
-const { calculateCompanyScore, getCompanyLabel } = require('./ai/company-score');
+const { calculateCompanyScore, getCompanyLabel } = require('../ai/company-score');
 
 function assertEqual(actual, expected, message) {
   if (actual !== expected) {

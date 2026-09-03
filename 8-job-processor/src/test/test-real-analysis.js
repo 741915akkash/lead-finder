@@ -1,10 +1,10 @@
 require('dotenv').config();
 
-const { analyzeJob } = require('./ai/analyze-job');
-const { calculateTechnologyScore } = require('./ai/technology-score');
-const { calculateCompanyScore } = require('./ai/company-score');
-const { calculateSalaryScore } = require('./normalizers/salary-score');
-const { TARGET_ROLE } = require('./config/target-role');
+const { analyzeJob } = require('../ai/analyze-job');
+const { calculateTechnologyScore } = require('../ai/technology-score');
+const { calculateCompanyScore } = require('../ai/company-score');
+const { calculateSalaryScore } = require('../normalizers/salary-score');
+const { TARGET_ROLE } = require('../config/target-role');
 
 const jobs = [
   {

@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const { supabase } = require('./db/db');
-const { recoverStaleJobs } = require('./repositories/jobs-repository');
+const { supabase } = require('../db/db');
+const { recoverStaleJobs } = require('../repositories/jobs-repository');
 
 const TEST_JOB_TYPE = 'parse_job';
 const TEST_JOB_POSTING_ID = 104;

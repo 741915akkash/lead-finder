@@ -1,4 +1,4 @@
-const { extractTechnologies } = require('./ai/extract-technologies');
+const { extractTechnologies } = require('../ai/extract-technologies');
 
 function assert(condition, message) {
   if (!condition) {

@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const { processNextJob } = require('./jobs/process-job');
-const { supabase } = require('./db/db');
+const { processNextJob } = require('../jobs/process-job');
+const { supabase } = require('../db/db');
 
 async function getLatestAnalyzedJob() {
   const { data, error } = await supabase

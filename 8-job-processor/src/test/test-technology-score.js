@@ -5,7 +5,7 @@ const {
   getTechnologyLabel,
   REQUIRED_WEIGHT,
   NICE_TO_HAVE_WEIGHT,
-} = require('./ai/technology-score');
+} = require('../ai/technology-score');
 
 function assert(condition, message) {
   if (!condition) {

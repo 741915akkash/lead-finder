@@ -1,4 +1,4 @@
-const { resolvePostedAt } = require('./normalizers/posted-at');
+const { resolvePostedAt } = require('../normalizers/posted-at');
 
 const discoveredAt = '2026-08-16T05:37:52.000Z';
 

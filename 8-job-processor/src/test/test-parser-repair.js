@@ -1,4 +1,4 @@
-const { parseJob } = require('./ai/parse-job');
+const { parseJob } = require('../ai/parse-job');
 
 const fakeResponses = [
   {
