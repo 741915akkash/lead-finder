@@ -52,6 +52,18 @@ function formatScore(score) {
   return Math.round(score * 100);
 }
 
+function formatDate(date) {
+  if (!date) {
+    return '-';
+  }
+
+  return new Date(date).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 function openApplication(row) {
   selectedJob.value = row;
 
@@ -187,6 +199,12 @@ function openPacket(row, type) {
           <th class="px-4 py-3 text-left text-sm font-semibold">Packets</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Archive</th>
+
+          <th
+            class="cursor-pointer px-4 py-3 text-left text-sm font-semibold select-none"
+            @click="emit('sort', 'posted_at')">
+            Job Posted At
+          </th>
         </tr>
       </thead>
 
@@ -310,14 +328,19 @@ function openPacket(row, type) {
               Archive
             </button>
           </td>
+
+          <!-- JOB POSTED AT -->
+          <td class="px-4 py-3 text-sm text-gray-600">
+            {{ formatDate(row.posted_at) }}
+          </td>
         </tr>
 
         <tr v-if="!loading && !rows.length">
-          <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
+          <td colspan="8" class="px-4 py-10 text-center text-sm text-gray-500">No jobs found.</td>
         </tr>
 
         <tr v-if="loading">
-          <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
+          <td colspan="8" class="px-4 py-10 text-center text-sm text-gray-500">Loading jobs...</td>
         </tr>
       </tbody>
     </table>
