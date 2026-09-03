@@ -10,7 +10,7 @@ const pageSize = ref(50);
 const sort = ref('score');
 const order = ref('desc');
 
-const days = ref(7);
+const days = ref(500);
 
 const { data: filters } = await useFetch('/api/filters');
 
