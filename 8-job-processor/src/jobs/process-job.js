@@ -21,8 +21,10 @@ function calculateFinalScore(technologyResult, companyScore, salaryScore) {
     return 0;
   }
 
+  // Technology gate passed, but required technology score
+  // could not be determined.
   if (technologyResult?.score == null) {
-    return null;
+    return 0;
   }
 
   const coreTechnologyScore = technologyResult.required_score;
@@ -153,7 +155,7 @@ async function processNextJob() {
      * analyzed job to be parsed/analyzed again.
      */
 
-    if (jobPosting.status === 'analyzed') {
+    if (jobPosting.status === 'analyzed' && jobPosting.fit_score != null) {
       console.log(`Job posting ${jobPosting.id} is already analyzed. Skipping.`);
 
       await completeJob(job.id, {
