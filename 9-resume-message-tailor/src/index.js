@@ -1,96 +1,57 @@
-const fs = require('fs');
-const path = require('path');
+require('dotenv').config();
 
-const { tailorResume } = require('./ai/tailor');
-const { validateTailoredResume } = require('./validation/validate-tailoring');
+const { POLL_INTERVAL_MS } = require('./config/config');
+const { processNextJob } = require('./worker/process-next-job');
 
-const MASTER_RESUME_PATH = path.join(__dirname, 'master-resume', 'master-resume.md');
+let shuttingDown = false;
 
-/**
- * Load the canonical master resume.
- *
- * The master resume is the single source of truth for
- * candidate experience, projects, technologies, and education.
- */
-function loadMasterResume() {
-  if (!fs.existsSync(MASTER_RESUME_PATH)) {
-    throw new Error(`Master resume not found: ${MASTER_RESUME_PATH}`);
-  }
-
-  const masterResume = fs.readFileSync(MASTER_RESUME_PATH, 'utf8').trim();
-
-  if (!masterResume) {
-    throw new Error('Master resume is empty.');
-  }
-
-  return masterResume;
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
-/**
- * Main resume tailoring pipeline.
- *
- * The fit-scoring pipeline has already determined that the job
- * is relevant. Tailoring does not need the fit analysis.
- *
- * Flow:
- *
- * FIT-SCORED JOB
- *      ↓
- * job description + master resume
- *      ↓
- * AI selects + tailors relevant material
- *      ↓
- * validate tailored resume
- *      ↓
- * tailored-resume.md
- */
-async function processJobApplication({ job, model, ollamaUrl }) {
-  if (!job) {
-    throw new Error('Missing job.');
+async function main() {
+  console.log('======================================');
+  console.log('RESUME MESSAGE TAILOR');
+  console.log('======================================');
+  console.log('');
+  console.log('Status: ON');
+  console.log(`Polling every ${POLL_INTERVAL_MS / 1000} seconds.`);
+  console.log('');
+  console.log('Waiting for eligible jobs...');
+  console.log('');
+
+  while (!shuttingDown) {
+    try {
+      await processNextJob();
+    } catch (error) {
+      console.error('Worker cycle failed:', error.message);
+    }
+
+    if (!shuttingDown) {
+      await sleep(POLL_INTERVAL_MS);
+    }
   }
 
-  if (!job.description) {
-    throw new Error('Missing job description.');
-  }
-
-  const masterResume = loadMasterResume();
-
-  const tailoringResult = await tailorResume({
-    job,
-    masterResume,
-    model,
-    ollamaUrl,
-  });
-
-  const validation = validateTailoredResume({
-    tailoredResume: tailoringResult.tailoring,
-    masterResume,
-    job,
-  });
-
-  if (!validation.valid) {
-    const errorDetails = validation.errors.map((error) => `- ${error}`).join('\n');
-
-    throw new Error(`Tailored resume failed validation.\n\n${errorDetails}`);
-  }
-
-  return {
-    status: 'ready_for_review',
-
-    job,
-
-    tailoring: tailoringResult.tailoring,
-
-    model: tailoringResult.model,
-
-    promptVersion: tailoringResult.promptVersion,
-
-    validation,
-  };
+  console.log('Resume/message tailor worker stopped.');
 }
 
-module.exports = {
-  processJobApplication,
-  loadMasterResume,
-  MASTER_RESUME_PATH,
-};
+function shutdown(signal) {
+  if (shuttingDown) {
+    return;
+  }
+
+  console.log(`Received ${signal}. Shutting down...`);
+
+  shuttingDown = true;
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+main().catch((error) => {
+  console.error('Resume/message tailor failed:', error);
+
+  process.exit(1);
+});
