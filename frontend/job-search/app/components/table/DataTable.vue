@@ -105,13 +105,8 @@ function handleArchived() {
 }
 
 function startEditingNote(row) {
-  if (!row.application) {
-    return;
-  }
-
-  editingNoteJobId.value = row.id;
-
-  editingNote.value = row.application.notes || '';
+  editingNoteJobId.value = Number(row.id);
+  editingNote.value = row.application?.notes || '';
 }
 
 function cancelEditingNote() {
@@ -121,44 +116,73 @@ function cancelEditingNote() {
 }
 
 async function saveNote(row) {
-  if (!row.application || savingNote.value) {
-    return;
-  }
+  if (savingNote.value) return;
 
   savingNote.value = true;
 
   try {
-    const result = await $fetch('/api/applications/update', {
-      method: 'PATCH',
+    const notes = editingNote.value.trim() || null;
 
-      body: {
-        id: row.application.id,
+    let application;
 
-        notes: editingNote.value.trim() || null,
-      },
-    });
+    if (row.application) {
+      /*
+       * Existing application:
+       * update its note.
+       */
+      application = await $fetch('/api/applications/update', {
+        method: 'PATCH',
+        body: {
+          id: row.application.id,
+          notes,
+        },
+      });
+    } else {
+      /*
+       * No application yet:
+       * create one and store the note immediately.
+       */
+      application = await $fetch('/api/applications/create', {
+        method: 'POST',
+        body: {
+          job_posting_id: row.id,
+          status: 'seen',
+          notes,
+        },
+      });
+    }
 
-    row.application.notes = result.notes;
+    /*
+     * Keep the table row in sync without
+     * requiring a full page refresh.
+     */
+    row.application = application;
 
     cancelEditingNote();
   } catch (error) {
     console.error('Failed to save application note:', error);
+
+    console.error('API error:', error?.data?.statusMessage || error?.statusMessage || error?.message || error);
   } finally {
     savingNote.value = false;
   }
 }
 
-function handleNoteKeydown(event, row) {
+async function handleNoteKeydown(event, row) {
   if (event.key === 'Escape') {
+    event.preventDefault();
     cancelEditingNote();
-
     return;
   }
 
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
+    event.stopPropagation();
 
-    saveNote(row);
+    console.log('Saving note for application:', row.application?.id);
+    console.log('Note:', editingNote.value);
+
+    await saveNote(row);
   }
 }
 
@@ -241,15 +265,14 @@ function openPacket(row, type) {
           <!-- NOTES -->
 
           <td class="max-w-xs px-4 py-3 text-sm text-gray-600">
-            <div v-if="editingNoteJobId === row.id">
+            <div v-if="Number(editingNoteJobId) === Number(row.id)">
               <textarea
                 v-model="editingNote"
                 rows="3"
                 autofocus
                 class="w-full min-w-[220px] resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-900/5"
                 :disabled="savingNote"
-                @keydown="handleNoteKeydown($event, row)"
-                @blur="saveNote(row)" />
+                @keydown="handleNoteKeydown($event, row)" />
 
               <div class="mt-1 text-xs text-gray-400">
                 {{ savingNote ? 'Saving...' : 'Ctrl + Enter to save · Esc to cancel' }}
@@ -257,19 +280,16 @@ function openPacket(row, type) {
             </div>
 
             <button
-              v-else-if="row.application"
+              v-else
               type="button"
               class="w-full rounded-lg px-2 py-1.5 text-left hover:bg-gray-100"
-              :title="row.application.notes || 'Add note'"
+              :title="row.application?.notes || 'Add note'"
               @click="startEditingNote(row)">
-              <span v-if="row.application.notes">
+              <span v-if="row.application?.notes">
                 {{ row.application.notes }}
               </span>
-
               <span v-else class="text-gray-400"> Add note... </span>
             </button>
-
-            <span v-else class="text-gray-400"> - </span>
           </td>
 
           <!-- JOB -->
