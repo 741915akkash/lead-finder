@@ -6,6 +6,6 @@ dist/
 supabase/.*
 supabase/snippets
 
-give-files-from-path*
+**/give-files-from-path*
 
 7-job-ingestor/data/
