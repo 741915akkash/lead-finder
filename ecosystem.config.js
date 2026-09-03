@@ -43,6 +43,20 @@ module.exports = {
     },
 
     {
+      name: 'resume-tailor',
+      cwd: './9-resume-message-tailor',
+      script: 'src/index.js',
+
+      autorestart: true,
+      restart_delay: 5000,
+      max_restarts: 10,
+
+      env: {
+        NODE_ENV: 'production',
+      },
+    },
+
+    {
       name: 'ollama',
       script: '/usr/local/bin/ollama',
       args: 'serve',
