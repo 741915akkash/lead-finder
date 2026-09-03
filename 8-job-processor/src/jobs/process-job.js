@@ -16,20 +16,22 @@ const { TARGET_ROLE } = require('../config/target-role');
 const { resolvePostedAt } = require('../normalizers/posted-at');
 
 function calculateFinalScore(technologyResult, companyScore, salaryScore) {
-  if (technologyResult?.score == null || salaryScore == null) {
-    return null;
+  // Hard technology gate.
+  if (technologyResult?.eligible === false) {
+    return 0;
   }
 
-  // Hard technology gate.
-  if (technologyResult.eligible === false) {
-    return 0;
+  if (technologyResult?.score == null) {
+    return null;
   }
 
   const coreTechnologyScore = technologyResult.required_score;
 
-  const effectiveCompanyScore = coreTechnologyScore != null && coreTechnologyScore >= 0.5 ? companyScore : 0;
+  const effectiveCompanyScore = coreTechnologyScore != null && coreTechnologyScore >= 0.5 ? (companyScore ?? 0) : 0;
 
-  return technologyResult.score * 0.5 + effectiveCompanyScore * 0.25 + salaryScore * 0.25;
+  const effectiveSalaryScore = salaryScore ?? 0;
+
+  return technologyResult.score * 0.5 + effectiveCompanyScore * 0.25 + effectiveSalaryScore * 0.25;
 }
 
 function getRecommendation(score) {
