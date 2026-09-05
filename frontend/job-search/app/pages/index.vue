@@ -19,7 +19,7 @@ const sort = ref('fit_score');
 
 const order = ref('desc');
 
-const days = ref(30);
+const days = ref(300);
 
 const { data: filters } = await useFetch('/api/filters');
 
