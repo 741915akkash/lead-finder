@@ -20,6 +20,10 @@ async function callOllama(prompt) {
         stream: false,
         format: 'json',
         think: false,
+        options: {
+          num_ctx: Number(process.env.OLLAMA_NUM_CTX),
+          num_predict: Number(process.env.OLLAMA_NUM_PREDICT),
+        },
       }),
     });
   } catch (error) {

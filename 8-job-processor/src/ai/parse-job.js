@@ -35,6 +35,10 @@ async function callOllama(prompt) {
         stream: false,
         format: 'json',
         think: false,
+        options: {
+          num_ctx: Number(process.env.OLLAMA_NUM_CTX),
+          num_predict: Number(process.env.OLLAMA_NUM_PREDICT),
+        },
       }),
     });
   } catch (error) {
@@ -111,8 +115,11 @@ function normalizeWorkplaceType(value) {
   /*
    * Ambiguous combinations must not be guessed.
    */
-  if (normalized.includes('remote') && normalized.includes('onsite')) {
-    return null;
+  if (normalized.includes(' or ')) {
+    return normalized
+      .split(/\s+or\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
 
   if (normalized.includes('remote') && normalized.includes('hybrid')) {
@@ -306,14 +313,16 @@ IMPORTANT PARSING RULES:
 - "title" must be a non-empty string.
 - Never return null for "title".
 - Never return an empty string for "title".
-- workplace_type must be exactly one of:
+- workplace_type may contain one or more of:
   - "remote"
   - "hybrid"
   - "onsite"
   - null
-- Never combine workplace types.
-- Never return values such as "onsite or remote", "remote or onsite", "remote/onsite", or "onsite/remote".
-- If the posting does not establish one specific workplace type, return null.
+- If multiple workplace types are explicitly stated, return them as an array.
+- For example, "onsite or remote" should be returned as:
+  ["onsite", "remote"]
+- Do not invent workplace types.
+- If the posting does not establish a workplace type, return null.
 - Do not guess.
 - posted_at_raw must contain ONLY a posting/listing/publication date expression.
 - Do not use application deadlines, closing dates, interview dates, start dates, company founding dates, or dates mentioned in the job description.
@@ -403,19 +412,17 @@ TITLE RULE:
 
 WORKPLACE TYPE RULE:
 
-- workplace_type must be exactly one of:
+- workplace_type may contain one or more of:
   "remote"
   "hybrid"
   "onsite"
   null
-- Never combine values.
-- Never return "onsite or remote".
-- Never return "remote or onsite".
-- Never return "remote/onsite".
-- Never return "onsite/remote".
-- If the posting does not establish one specific workplace type, return null.
-- Do not guess.
-
+- If multiple workplace types are explicitly stated, return them as an array.
+- For example:
+  "onsite or remote"
+  → ["onsite", "remote"]
+- Do not invent workplace types.
+- If the posting does not establish a workplace type, return null.
 POSTING DATE RULE:
 
 - posted_at_raw must refer ONLY to when the job was posted, listed, added, or published.

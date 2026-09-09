@@ -84,7 +84,13 @@ function getValidationErrors(job) {
   }
 
   // Workplace type
-  if (job.workplace_type !== null && !WORKPLACE_TYPES.has(job.workplace_type)) {
+  if (Array.isArray(job.workplace_type)) {
+    for (const workplaceType of job.workplace_type) {
+      if (!WORKPLACE_TYPES.has(workplaceType)) {
+        errors.push(`workplace_type has invalid value: ${workplaceType}`);
+      }
+    }
+  } else if (job.workplace_type !== null && !WORKPLACE_TYPES.has(job.workplace_type)) {
     errors.push(`workplace_type has invalid value: ${job.workplace_type}`);
   }
 
