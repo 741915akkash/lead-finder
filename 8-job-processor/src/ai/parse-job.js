@@ -262,7 +262,18 @@ function normalizeParsedJob(job, rawText) {
 
   const normalizedJob = {
     ...job,
+
+    // Optional fields default to null when Ollama omits them.
+    location: job.location ?? null,
+    employment_type: job.employment_type ?? null,
     workplace_type: normalizeWorkplaceType(job.workplace_type),
+
+    salary_original: job.salary_original ?? null,
+    salary_min: job.salary_min ?? null,
+    salary_max: job.salary_max ?? null,
+    salary_currency: job.salary_currency ?? null,
+
+    posted_at_raw: job.posted_at_raw ?? null,
   };
 
   /*
