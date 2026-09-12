@@ -21,7 +21,6 @@ async function updateParsedJob(id, parsedJob, postedAt) {
       title: parsedJob.title,
       company: parsedJob.company,
       location: parsedJob.location,
-      employment_type: parsedJob.employment_type,
       workplace_type: parsedJob.workplace_type,
 
       salary_original: parsedJob.salary_original,

@@ -26,7 +26,6 @@ function normalizeJob(job) {
     company: job.company || null,
     location: job.location || null,
 
-    employment_type: job.employment_type || null,
     workplace_type: job.workplace_type || null,
 
     salary_min: job.salary_min ?? null,

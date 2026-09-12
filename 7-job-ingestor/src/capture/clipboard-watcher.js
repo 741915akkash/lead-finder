@@ -23,7 +23,6 @@ const JOB_SIGNALS = [
   'what we value',
   'qualifications',
   'experience',
-  'employment type',
   'location:',
   'job title:',
   'salary',

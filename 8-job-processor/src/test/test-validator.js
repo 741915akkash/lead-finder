@@ -55,15 +55,6 @@ const wrongSalaryType = {
 
 test('salary_min is string', wrongSalaryType, false);
 
-// 3. Invalid employment type
-
-const invalidEmploymentType = {
-  ...validJob,
-  employment_type: 'permanent',
-};
-
-test('invalid employment type', invalidEmploymentType, false);
-
 // 4. Invalid workplace type
 
 const invalidWorkplaceType = {

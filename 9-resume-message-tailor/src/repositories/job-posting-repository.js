@@ -14,7 +14,6 @@ async function fetchNextEligibleJob() {
       'title',
       'company',
       'location',
-      'employment_type',
       'workplace_type',
       'salary_min',
       'salary_max',

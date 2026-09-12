@@ -1,12 +1,9 @@
-const EMPLOYMENT_TYPES = new Set(['full-time', 'part-time', 'contract', 'internship', 'temporary', 'other']);
-
 const WORKPLACE_TYPES = new Set(['remote', 'hybrid', 'onsite']);
 
 const REQUIRED_FIELDS = [
   'title',
   'company',
   'location',
-  'employment_type',
   'workplace_type',
   'salary_original',
   'salary_min',
@@ -76,11 +73,6 @@ function getValidationErrors(job) {
     if (!isStringOrNull(job[field])) {
       errors.push(`${field} must be a string or null`);
     }
-  }
-
-  // Employment type
-  if (job.employment_type !== null && !EMPLOYMENT_TYPES.has(job.employment_type)) {
-    errors.push(`employment_type has invalid value: ${job.employment_type}`);
   }
 
   // Workplace type

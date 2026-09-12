@@ -15,8 +15,6 @@ function buildApplicationPacket({ job, masterResume }) {
 
 **Location:** ${job.location || 'Unknown'}
 
-**Employment Type:** ${job.employment_type || 'Unknown'}
-
 **Workplace Type:** ${job.workplace_type || 'Unknown'}
 
 **Job URL:** ${job.url || 'Unknown'}

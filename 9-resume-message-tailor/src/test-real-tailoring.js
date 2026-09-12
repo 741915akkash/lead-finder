@@ -56,7 +56,6 @@ async function fetchJobs() {
       'title',
       'company',
       'location',
-      'employment_type',
       'workplace_type',
       'salary_min',
       'salary_max',
@@ -122,8 +121,6 @@ function buildApplicationPacket({ job, masterResume }) {
 **Recommendation:** ${job.recommendation || 'Unknown'}
 
 **Location:** ${job.location || 'Unknown'}
-
-**Employment Type:** ${job.employment_type || 'Unknown'}
 
 **Workplace Type:** ${job.workplace_type || 'Unknown'}
 
@@ -202,8 +199,6 @@ function buildNetworkingPacket({ job, masterResume }) {
 **Recommendation:** ${recommendation}
 
 **Location:** ${job.location || 'Unknown'}
-
-**Employment Type:** ${job.employment_type || 'Unknown'}
 
 **Workplace Type:** ${job.workplace_type || 'Unknown'}
 

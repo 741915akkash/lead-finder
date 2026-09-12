@@ -14,8 +14,6 @@ function normalizeGreenhouseJob(job, company) {
 
     location: job.location?.name || null,
 
-    employment_type: null,
-
     workplace_type: null,
 
     salary_min: null,

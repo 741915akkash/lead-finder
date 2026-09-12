@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsp = fs.promises;
 const path = require('path');
 
 const { getValidationErrors } = require('./validate-parsed-job');
@@ -7,6 +8,30 @@ const promptPath = path.join(__dirname, 'prompt.txt');
 
 function loadPrompt() {
   return fs.readFileSync(promptPath, 'utf8');
+}
+
+async function saveInvalidOllamaResponse(response, error, context = {}) {
+  const dir = path.resolve(process.cwd(), 'logs', 'ollama-invalid');
+
+  await fsp.mkdir(dir, { recursive: true });
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const filename = `${timestamp}-${context.jobId ?? 'unknown'}.txt`;
+
+  const content = [
+    `Job ID: ${context.jobId ?? 'unknown'}`,
+    `Posting ID: ${context.postingId ?? 'unknown'}`,
+    `Stage: ${context.stage ?? 'unknown'}`,
+    `Error: ${error.message}`,
+    `Response length: ${response?.length ?? 0}`,
+    '',
+    '===== RAW OLLAMA RESPONSE =====',
+    response ?? '',
+    '',
+    '===== END RESPONSE =====',
+  ].join('\n');
+
+  await fsp.writeFile(path.join(dir, filename), content, 'utf8');
 }
 
 async function callOllama(prompt) {
@@ -71,13 +96,21 @@ async function callOllama(prompt) {
   return data.response;
 }
 
-function parseOllamaJson(response) {
+function parseOllamaJson(response, context = {}) {
   try {
     return {
       parsed: JSON.parse(response),
       error: null,
     };
   } catch (error) {
+    console.log('Parser returned invalid JSON:');
+    console.log(`- ${error.message}`);
+
+    saveInvalidOllamaResponse(response, error, context).catch((saveError) => {
+      console.error('Failed to save invalid Ollama response:');
+      console.error(saveError);
+    });
+
     return {
       parsed: null,
       error: error.message,
@@ -265,7 +298,6 @@ function normalizeParsedJob(job, rawText) {
 
     // Optional fields default to null when Ollama omits them.
     location: job.location ?? null,
-    employment_type: job.employment_type ?? null,
     workplace_type: normalizeWorkplaceType(job.workplace_type),
 
     salary_original: job.salary_original ?? null,
@@ -318,35 +350,6 @@ async function parseJob(rawText, ollamaCaller = callOllama) {
 
 Parse the following job posting.
 
-IMPORTANT PARSING RULES:
-
-- "title" is REQUIRED.
-- "title" must be a non-empty string.
-- Never return null for "title".
-- Never return an empty string for "title".
-- workplace_type may contain one or more of:
-  - "remote"
-  - "hybrid"
-  - "onsite"
-  - null
-- If multiple workplace types are explicitly stated, return them as an array.
-- For example, "onsite or remote" should be returned as:
-  ["onsite", "remote"]
-- Do not invent workplace types.
-- If the posting does not establish a workplace type, return null.
-- Do not guess.
-- posted_at_raw must contain ONLY a posting/listing/publication date expression.
-- Do not use application deadlines, closing dates, interview dates, start dates, company founding dates, or dates mentioned in the job description.
-- Preserve the original expression where possible, such as:
-  - "6 days ago"
-  - "yesterday"
-  - "today"
-  - "August 28, 2026"
-  - "28 August 2026"
-  - "2026-08-28"
-- Do not calculate or convert posted_at_raw.
-- If there is no identifiable posting date, return null for posted_at_raw.
-
 <RAW_JOB_TEXT>
 ${rawText}
 </RAW_JOB_TEXT>`;
@@ -395,97 +398,25 @@ ${validationErrors.map((error) => `- ${error}`).join('\n')}`;
 
   const repairPrompt = `${systemPrompt}
 
-The previous parser attempt failed.
+The previous parser attempt failed validation.p
 
-You must now produce the corrected JSON object.
+Return a corrected, complete JSON object matching the schema above.
 
-IMPORTANT:
-
+Rules:
 - Return JSON only.
-- Do not write explanations.
-- Do not discuss the previous output.
-- Do not say that you need to recheck the job.
-- Do not describe what you changed.
-- Do not apologize.
-- Do not continue the conversation.
-- Do not add commentary before or after the JSON.
-- Return the complete JSON object specified by the schema.
+- Return every schema field.
 - Do not add additional fields.
-- Do not truncate the description.
+- Preserve valid information from the previous output.
+- Fix the listed validation errors.
 - Extract only information supported by the original job posting.
+- Do not truncate the description.
+- Unknown values must be JSON null, never the string "null".
+- title must be a non-empty string.
+- workplace_type may be "remote", "hybrid", "onsite", an array of these values, or null.
+- posted_at_raw must contain only the original expression indicating when the job was posted/listed/published, or null.
+- Do not use deadlines, closing dates, interview dates, start dates, founding dates, experience requirements, or unrelated dates for posted_at_raw.
 
-TITLE RULE:
-
-- "title" is REQUIRED.
-- "title" must be a non-empty string.
-- Never return null for "title".
-- Never return an empty string for "title".
-
-WORKPLACE TYPE RULE:
-
-- workplace_type may contain one or more of:
-  "remote"
-  "hybrid"
-  "onsite"
-  null
-- If multiple workplace types are explicitly stated, return them as an array.
-- For example:
-  "onsite or remote"
-  → ["onsite", "remote"]
-- Do not invent workplace types.
-- If the posting does not establish a workplace type, return null.
-POSTING DATE RULE:
-
-- posted_at_raw must refer ONLY to when the job was posted, listed, added, or published.
-- Do not use an application deadline.
-- Do not use a closing date.
-- Do not use an interview date.
-- Do not use a start date.
-- Do not use a company founding date.
-- Do not use a year of experience.
-- Do not use another unrelated date mentioned in the description.
-- Preserve the original posting-date expression.
-- Examples:
-  "6 days ago"
-  "yesterday"
-  "today"
-  "August 28, 2026"
-  "28 August 2026"
-  "2026-08-28"
-- Do not calculate or convert posted_at_raw.
-- If there is no identifiable posting date, return null.
-
-NULL VALUES ARE JSON VALUES, NOT STRINGS.
-
-Correct:
-"location": null
-
-Incorrect:
-"location": "null"
-
-Correct:
-"employment_type": null
-
-Incorrect:
-"employment_type": "null"
-
-Correct:
-"workplace_type": null
-
-Incorrect:
-"workplace_type": "null"
-
-Correct:
-"posted_at_raw": null
-
-Incorrect:
-"posted_at_raw": "null"
-
-For enum fields such as employment_type and workplace_type, use JSON null when unknown.
-
-The description must contain only substantive job-posting content.
-Do not mention parsing, truncation, previous responses, or this repair process inside the description.
-
+VALIDATION ERRORS:
 ${repairProblem}
 
 PREVIOUS OUTPUT:

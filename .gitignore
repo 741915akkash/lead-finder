@@ -9,3 +9,5 @@ supabase/snippets
 **/give-files-from-path*
 
 7-job-ingestor/data/
+
+8-job-processor/logs/

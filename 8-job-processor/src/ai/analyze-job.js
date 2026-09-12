@@ -115,7 +115,6 @@ JOB:
 Title: ${job.title ?? null}
 Company: ${job.company ?? null}
 Location: ${job.location ?? null}
-Employment Type: ${job.employment_type ?? null}
 Workplace Type: ${job.workplace_type ?? null}
 
 DESCRIPTION:
