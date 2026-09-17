@@ -1,5 +1,6 @@
 const { normalizeJob } = require('./normalize-job');
 const { upsertJob } = require('./upsert-job');
+const { createProcessingJob } = require('./create-processing-job');
 
 async function ingestJobs(rawJobs) {
   let inserted = 0;
@@ -9,7 +10,12 @@ async function ingestJobs(rawJobs) {
     try {
       const job = normalizeJob(rawJob);
 
-      await upsertJob(job);
+      const data = await upsertJob(job);
+
+      // Create the downstream processing job.
+      //
+      // jobs_2 is the queue consumed by 8-job-processor.
+      await createProcessingJob(data.id);
 
       inserted += 1;
     } catch (err) {

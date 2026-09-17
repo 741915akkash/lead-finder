@@ -35,7 +35,7 @@ module.exports = {
 
       autorestart: false,
 
-      cron_restart: '0 */1 * * *',
+      cron_restart: '*/30 * * * *',
 
       env: {
         NODE_ENV: 'production',
@@ -49,7 +49,7 @@ module.exports = {
 
       autorestart: false,
 
-      cron_restart: '0 */3 * * *',
+      cron_restart: '0 */1 * * *',
 
       env: {
         NODE_ENV: 'production',

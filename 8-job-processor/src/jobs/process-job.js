@@ -3,6 +3,8 @@ const { claimJob } = require('../queue/claim-job');
 const { completeJob } = require('../queue/complete-job');
 const { failJob } = require('../queue/fail-job');
 
+const { requiresMoreThanThreeYears } = require('../filters/experience-filter');
+
 const { getJobPostingById, updateParsedJob, updateJobAnalysis } = require('../repositories/job-postings-repository');
 
 const { parseJob } = require('../ai/parse-job');
@@ -179,6 +181,18 @@ async function processNextJob() {
     // --------------------------------------------
     // Stage 1: Parse
     // --------------------------------------------
+
+    if (requiresMoreThanThreeYears(jobPosting.description || jobPosting.raw_text)) {
+      console.log(`Skipping job posting ${jobPosting.id}: experience requirement exceeds 3 years.`);
+
+      await completeJob(job.id, {
+        job_posting_id: jobPosting.id,
+        skipped: true,
+        reason: 'experience_requirement_over_3_years',
+      });
+
+      return true;
+    }
 
     const parsedJob = await parseJob(jobPosting.raw_text);
 

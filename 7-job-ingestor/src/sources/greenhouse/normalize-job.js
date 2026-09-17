@@ -24,6 +24,8 @@ function normalizeGreenhouseJob(job, company) {
 
     description: job.content || null,
 
+    raw_text: job.content || null,
+
     posted_at: job.first_published || job.updated_at || null,
 
     raw_data: job,
