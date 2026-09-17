@@ -179,7 +179,7 @@ async function processNextJob() {
     console.log(`Queue attempt: ${job.attempts ?? 1}`);
 
     // --------------------------------------------
-    // Stage 1: Parse
+    // Experience filter
     // --------------------------------------------
 
     if (requiresMoreThanThreeYears(jobPosting.description || jobPosting.raw_text)) {
@@ -193,6 +193,10 @@ async function processNextJob() {
 
       return true;
     }
+
+    // --------------------------------------------
+    // Stage 1: Parse
+    // --------------------------------------------
 
     const parsedJob = await parseJob(jobPosting.raw_text);
 
