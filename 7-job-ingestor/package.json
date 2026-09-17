@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "capture": "node src/capture/index.js",
-    "ingest": "node src/ingestion/index.js"
+    "ingest": "node src/ingestion/index.js",
+    "ingest-companies": "node src/ingestion/companies.js",
+    "discover-companies": "node src/discovery/companies.js"
   },
   "keywords": [],
   "author": "",

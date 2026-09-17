@@ -29,13 +29,13 @@ module.exports = {
     },
 
     {
-      name: 'job-processor',
-      cwd: './8-job-processor',
-      script: 'src/index.js',
+      name: 'company-ats-discovery',
+      cwd: './7-job-ingestor',
+      script: 'src/discovery/companies.js',
 
-      autorestart: true,
-      restart_delay: 5000,
-      max_restarts: 10,
+      autorestart: false,
+
+      cron_restart: '0 */1 * * *',
 
       env: {
         NODE_ENV: 'production',
@@ -43,8 +43,22 @@ module.exports = {
     },
 
     {
-      name: 'resume-tailor',
-      cwd: './9-resume-message-tailor',
+      name: 'company-ats-ingest',
+      cwd: './7-job-ingestor',
+      script: 'src/ingestion/companies.js',
+
+      autorestart: false,
+
+      cron_restart: '0 */3 * * *',
+
+      env: {
+        NODE_ENV: 'production',
+      },
+    },
+
+    {
+      name: 'job-processor',
+      cwd: './8-job-processor',
       script: 'src/index.js',
 
       autorestart: true,
@@ -68,3 +82,4 @@ module.exports = {
     },
   ],
 };
+

@@ -15,6 +15,8 @@ function normalizeJob(job) {
     throw new Error('Job title is required');
   }
 
+  const description = job.description || null;
+
   return {
     source: job.source,
     source_job_id: String(job.source_job_id),
@@ -32,7 +34,10 @@ function normalizeJob(job) {
     salary_max: job.salary_max ?? null,
     salary_currency: job.salary_currency || null,
 
-    description: job.description || null,
+    description,
+
+    // The downstream processor expects raw_text.
+    raw_text: job.raw_text || description,
 
     posted_at: job.posted_at || null,
 
