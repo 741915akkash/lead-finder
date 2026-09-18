@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 
 import ApplicationModal from '~/components/applications/ApplicationModal.vue';
+import CompanyArchiveModal from '~/components/table/CompanyArchiveModal.vue';
 
 import ArchiveModal from '~/components/table/ArchiveModal.vue';
 
@@ -26,11 +27,15 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['sort', 'application-saved', 'job-archived']);
+const emit = defineEmits(['sort', 'application-saved', 'job-archived', 'company-archived']);
 
 const selectedJob = ref(null);
 
 const selectedApplication = ref(null);
+
+const selectedCompany = ref(null);
+
+const showCompanyArchiveModal = ref(false);
 
 const showApplicationModal = ref(false);
 
@@ -43,6 +48,24 @@ const editingNote = ref('');
 const savingNote = ref(false);
 
 const activeRowId = ref(null);
+
+function openCompanyArchive(company) {
+  selectedCompany.value = company;
+
+  showCompanyArchiveModal.value = true;
+}
+
+function closeCompanyArchive() {
+  showCompanyArchiveModal.value = false;
+
+  selectedCompany.value = null;
+}
+
+function handleCompanyArchived() {
+  closeCompanyArchive();
+
+  emit('company-archived');
+}
 
 function formatScore(score) {
   if (score === null || score === undefined) {
@@ -220,6 +243,8 @@ function openPacket(row, type) {
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Company</th>
 
+          <th class="px-4 py-3 text-left text-sm font-semibold">Archive Company</th>
+
           <th class="px-4 py-3 text-left text-sm font-semibold">Packets</th>
 
           <th class="px-4 py-3 text-left text-sm font-semibold">Archive</th>
@@ -308,21 +333,33 @@ function openPacket(row, type) {
           <!-- COMPANY -->
 
           <td class="px-4 py-3">
-            {{ row.company || '-' }}
+            <div v-if="row.company" class="flex items-center gap-3">
+              <span>
+                {{ row.company }}
+              </span>
+            </div>
+
+            <span v-else>-</span>
+          </td>
+
+          <!-- ARCHIVE COMPANY -->
+          <td class="px-4 py-3">
+            <button
+              type="button"
+              class="flex h-12 w-16 flex-col items-center justify-center rounded-lg bg-gray-100 text-xs font-medium leading-tight text-gray-600 hover:bg-gray-200"
+              @click="
+                openCompanyArchive(row.company);
+                selectRow(row);
+              ">
+              <span>Archive</span>
+              <span>Company</span>
+            </button>
           </td>
 
           <!-- PACKETS -->
 
           <td class="px-4 py-3">
             <div class="flex gap-2">
-              <button
-                v-if="row.application_packet"
-                type="button"
-                class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-                @click="openPacket(row, 'application')">
-                Resume
-              </button>
-
               <button
                 v-if="row.networking_packet"
                 type="button"
@@ -374,4 +411,9 @@ function openPacket(row, type) {
     @saved="handleSaved" />
 
   <ArchiveModal :open="showArchiveModal" :job="selectedJob" @close="closeArchive" @archived="handleArchived" />
+  <CompanyArchiveModal
+    :open="showCompanyArchiveModal"
+    :company="selectedCompany"
+    @close="closeCompanyArchive"
+    @archived="handleCompanyArchived" />
 </template>
