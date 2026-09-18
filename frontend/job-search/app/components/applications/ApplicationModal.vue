@@ -24,6 +24,8 @@ const emit = defineEmits(['close', 'saved']);
 
 const saving = ref(false);
 
+const savingStatus = ref(false);
+
 const loadingContacts = ref(false);
 
 const error = ref('');
@@ -90,8 +92,58 @@ function openCrm() {
   window.open(crmUrl.value, '_blank', 'noopener,noreferrer');
 }
 
+async function saveStatus() {
+  if (!props.job?.id || savingStatus.value) {
+    return;
+  }
+
+  savingStatus.value = true;
+
+  error.value = '';
+
+  try {
+    let result;
+
+    // Existing application → update it
+    if (props.application?.id) {
+      result = await $fetch('/api/applications/update', {
+        method: 'PATCH',
+
+        body: {
+          id: props.application.id,
+          status: form.value.status,
+        },
+      });
+    }
+
+    // No application yet → create it
+    else {
+      result = await $fetch('/api/applications/create', {
+        method: 'POST',
+
+        body: {
+          job_posting_id: props.job.id,
+          status: form.value.status,
+          notes: form.value.notes || null,
+          contacts: [],
+        },
+      });
+    }
+
+    emit('saved', result);
+
+    // Close only after the save/create request succeeds.
+    emit('close');
+  } catch (err) {
+    error.value =
+      err?.data?.statusMessage || err?.data?.message || err?.message || 'Could not save application status.';
+  } finally {
+    savingStatus.value = false;
+  }
+}
+
 async function save() {
-  if (!props.job?.id) {
+  if (!props.job?.id || saving.value) {
     return;
   }
 
@@ -196,11 +248,17 @@ watch(
         <!-- STATUS -->
 
         <div>
-          <label class="mb-2 block text-sm font-medium text-gray-800"> Application status </label>
+          <div class="mb-2 flex items-center justify-between">
+            <label class="block text-sm font-medium text-gray-800"> Application status </label>
+
+            <span v-if="savingStatus" class="text-xs text-gray-400"> Saving... </span>
+          </div>
 
           <select
             v-model="form.status"
-            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-900 outline-none transition focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-gray-900/5">
+            :disabled="savingStatus"
+            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-900 outline-none transition focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-gray-900/5 disabled:cursor-not-allowed disabled:opacity-60"
+            @change="saveStatus">
             <option value="seen">Seen</option>
 
             <option value="applied">Applied</option>
@@ -302,7 +360,7 @@ watch(
 
         <button
           type="button"
-          :disabled="saving"
+          :disabled="saving || savingStatus"
           class="rounded-xl bg-gray-800 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
           @click="save">
           {{ saving ? 'Saving...' : 'Save Application' }}
