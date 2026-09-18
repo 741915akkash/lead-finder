@@ -1,5 +1,7 @@
 const { supabase } = require('../db/db');
 
+const { updateExistingJob } = require('../services/update-job');
+
 const { fetchJobs: fetchGreenhouseJobs } = require('../sources/greenhouse/fetch-jobs');
 const { normalizeGreenhouseJob } = require('../sources/greenhouse/normalize-job');
 
@@ -116,34 +118,59 @@ async function ingestCompany(company) {
 
   const existingIds = await getExistingJobs(source, sourceJobIds);
 
+  const existingJobs = jobs.filter((job) => existingIds.has(String(job.source_job_id)));
+
   const newJobs = jobs.filter((job) => !existingIds.has(String(job.source_job_id)));
 
-  console.log(`Existing jobs: ${jobs.length - newJobs.length}`);
+  console.log(`Existing jobs: ${existingJobs.length}`);
   console.log(`New jobs: ${newJobs.length}`);
 
-  if (!newJobs.length) {
-    console.log('✓ No new jobs to ingest.');
+  // ----------------------------------
+  // UPDATE EXISTING JOBS
+  // ----------------------------------
 
-    return {
-      company: company.name,
-      status: 'completed',
-      fetched: rawJobs.length,
-      target: targetJobs.length,
-      new: 0,
-      processed: 0,
-    };
+  let updated = 0;
+  let updateFailed = 0;
+
+  for (const job of existingJobs) {
+    try {
+      await updateExistingJob(job);
+      updated += 1;
+    } catch (error) {
+      updateFailed += 1;
+
+      console.error(`✗ Failed to update ${job.title}:`, error.message);
+    }
   }
 
-  const result = await ingestJobs(newJobs);
+  console.log(`Updated existing jobs: ${updated}`);
+
+  // ----------------------------------
+  // INSERT NEW JOBS
+  // ----------------------------------
+
+  let processed = 0;
+  let insertFailed = 0;
+
+  if (newJobs.length) {
+    const result = await ingestJobs(newJobs);
+
+    processed = result.processed;
+    insertFailed = result.failed;
+  }
+
+  console.log(`Inserted and queued: ${processed}`);
 
   return {
     company: company.name,
     status: 'completed',
     fetched: rawJobs.length,
     target: targetJobs.length,
+    existing: existingJobs.length,
+    updated,
     new: newJobs.length,
-    processed: result.processed,
-    failed: result.failed,
+    processed,
+    failed: updateFailed + insertFailed,
   };
 }
 

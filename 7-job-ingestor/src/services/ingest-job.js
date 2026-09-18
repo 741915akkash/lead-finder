@@ -12,9 +12,6 @@ async function ingestJobs(rawJobs) {
 
       const data = await upsertJob(job);
 
-      // Create the downstream processing job.
-      //
-      // jobs_2 is the queue consumed by 8-job-processor.
       await createProcessingJob(data.id);
 
       inserted += 1;
