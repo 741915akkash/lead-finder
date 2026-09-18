@@ -32,9 +32,6 @@ const contacts = ref([]);
 
 const form = ref({
   status: 'seen',
-  applied_at: '',
-  application_url: '',
-  resume_version: '',
   notes: '',
 });
 
@@ -52,36 +49,11 @@ const crmUrl = computed(() => {
   return `${base}?search=${encodeURIComponent(company.value)}`;
 });
 
-function toDatetimeLocal(value) {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const offset = date.getTimezoneOffset();
-
-  const local = new Date(date.getTime() - offset * 60000);
-
-  return local.toISOString().slice(0, 16);
-}
-
 function resetForm() {
   error.value = '';
 
   form.value = {
     status: props.application?.status || 'seen',
-
-    applied_at: toDatetimeLocal(props.application?.applied_at),
-
-    application_url: props.application?.application_url || props.job?.apply_url || props.job?.url || '',
-
-    resume_version: props.application?.resume_version || '',
-
     notes: props.application?.notes || '',
   };
 }
@@ -130,13 +102,6 @@ async function save() {
   try {
     const payload = {
       status: form.value.status,
-
-      applied_at: form.value.applied_at ? new Date(form.value.applied_at).toISOString() : null,
-
-      application_url: form.value.application_url || null,
-
-      resume_version: form.value.resume_version || null,
-
       notes: form.value.notes || null,
     };
 
@@ -186,14 +151,6 @@ watch(
     await loadContacts();
   },
 );
-
-function openApplicationUrl() {
-  if (!form.value.application_url) {
-    return;
-  }
-
-  window.open(form.value.application_url, '_blank', 'noopener,noreferrer');
-}
 </script>
 
 <template>
@@ -315,42 +272,9 @@ function openApplicationUrl() {
             class="mt-3 w-full rounded-lg bg-green-600 px-3 py-5 text-sm font-medium text-white transition hover:bg-green-700"
             @click="openCrm">
             Open CRM
+
             <span v-if="company"> — {{ company }} </span>
           </button>
-        </div>
-
-        <!-- APPLIED DATE -->
-
-        <div>
-          <label class="mb-2 block text-sm font-medium text-gray-800"> Applied at </label>
-
-          <input
-            v-model="form.applied_at"
-            type="datetime-local"
-            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-900 outline-none transition focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-gray-900/5" />
-        </div>
-
-        <!-- APPLICATION URL -->
-
-        <div v-if="form.application_url">
-          <button
-            type="button"
-            class="w-full rounded-lg bg-red-700 px-3 py-5 text-sm font-medium text-white transition hover:bg-red-800"
-            @click="openApplicationUrl">
-            Open Application
-          </button>
-        </div>
-
-        <!-- RESUME -->
-
-        <div>
-          <label class="mb-2 block text-sm font-medium text-gray-800"> Resume version </label>
-
-          <input
-            v-model="form.resume_version"
-            type="text"
-            placeholder="e.g. Master Resume"
-            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 transition focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-gray-900/5" />
         </div>
 
         <!-- NOTES -->
