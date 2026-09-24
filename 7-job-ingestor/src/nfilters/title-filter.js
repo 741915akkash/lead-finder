@@ -14,6 +14,9 @@ function isTargetJob(job) {
     /\btechnical support\b/,
     /\bsupport engineer\b/,
 
+    // intern
+    /\bintern\b/,
+
     // Security operations
     /\bsecurity operations\b/,
     /\bsoc engineer\b/,
