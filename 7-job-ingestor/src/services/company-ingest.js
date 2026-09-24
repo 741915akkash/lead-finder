@@ -10,11 +10,10 @@ const { normalizeAshbyJob } = require('../sources/ashby/normalize-job');
 
 const { ingestJobs } = require('./ingest-job');
 
-function isTargetJob(job) {
-  const title = job?.title || '';
-
-  return /\bfull[\s-]?stack\b/i.test(title) || /\bengineer\b/i.test(title);
-}
+const { isTargetJob } = require('../nfilters/title-filter');
+const { isTargetLocation } = require('../nfilters/location-filter');
+const { requiresMoreThanThreeYears } = require('../nfilters/experience-filter');
+const { hasNoVisaSponsorship } = require('../nfilters/visa-filter');
 
 async function getCompanies() {
   const { data, error } = await supabase
@@ -79,10 +78,35 @@ async function ingestCompany(company) {
 
   console.log(`Fetched ${rawJobs.length} jobs`);
 
-  // Filter BEFORE database comparison.
-  const targetJobs = rawJobs.filter(isTargetJob);
+  // --------------------------------------------------
+  // HARD FILTERS
+  // --------------------------------------------------
 
-  console.log(`Target jobs: ${targetJobs.length}`);
+  const titleJobs = rawJobs.filter(isTargetJob);
+
+  console.log(`After title filter: ${titleJobs.length}`);
+
+  const locationJobs = titleJobs.filter(isTargetLocation);
+
+  console.log(`After location filter: ${locationJobs.length}`);
+
+  const experienceJobs = locationJobs.filter((job) => {
+    const description = job.descriptionPlain || job.description || job.content || '';
+
+    return !requiresMoreThanThreeYears(description);
+  });
+
+  console.log(`After experience filter: ${experienceJobs.length}`);
+
+  const targetJobs = experienceJobs.filter((job) => {
+    const description = job.descriptionPlain || job.description || job.content || '';
+
+    return !hasNoVisaSponsorship(description);
+  });
+
+  console.log(`After visa filter: ${targetJobs.length}`);
+
+  // --------------------------------------------------
 
   if (!targetJobs.length) {
     console.log('No target jobs found.');
