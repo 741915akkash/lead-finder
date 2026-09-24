@@ -57,6 +57,112 @@ function isTargetJob(job) {
     /\bhead of sales\b/,
     /\bvp of sales\b/,
     /\bcommercial\b/,
+
+    // Marketing titles / keywords
+    /\bmarketing\b/,
+    /bmarketing associate\b/,
+    /\bmarketing specialist\b/,
+    /\bmarketing coordinator\b/,
+    /\bmarketing executive\b/,
+    /\bmarketing manager\b/,
+    /\bmarketing director\b/,
+    /\bhead of marketing\b/,
+    /\bvp of marketing\b/,
+    /\bchief marketing officer\b/,
+    /\bcmo\b/,
+
+    // Growth Marketing
+    /\bgrowth marketing\b/,
+    /\bgrowth marketer\b/,
+    /\bgrowth manager\b/,
+    /\bgrowth lead\b/,
+    /\bhead of growth\b/,
+    /\bvp of growth\b/,
+    /\bgrowth hacker\b/,
+    /\bperformance marketing\b/,
+    /\bperformance marketer\b/,
+    /\bacquisition marketing\b/,
+    /\bcustomer acquisition\b/,
+
+    // Digital Marketing
+    /\bdigital marketing\b/,
+    /bdigital marketer\b/,
+    /\bdigital marketing specialist\b/,
+    /\bdigital marketing manager\b/,
+    /\bonline marketing\b/,
+    /\binternet marketing\b/,
+
+    // Content Marketing
+    /\bcontent marketing\b/,
+    /\bcontent marketer\b/,
+    /\bcontent marketing manager\b/,
+    /\bcontent strategist\b/,
+    /\bcontent lead\b/,
+    /\bhead of content\b/,
+    /\bsocial media marketing\b/,
+    /\bsocial media manager\b/,
+    /\bsocial media specialist\b/,
+    /\bsocial media strategist\b/,
+
+    // SEO / SEM
+    /\bseo\b/,
+    /\bseo specialist\b/,
+    /\bseo manager\b/,
+    /\bseo lead\b/,
+    /\bhead of seo\b/,
+    /\bsem\b/,
+    /\bsearch engine marketing\b/,
+    /\bsearch marketing\b/,
+
+    // Product Marketing
+    /\bproduct marketing\b/,
+    /\bproduct marketer\b/,
+    /\bproduct marketing manager\b/,
+    /\bproduct marketing lead\b/,
+    /\bhead of product marketing\b/,
+    /\bvp of product marketing\b/,
+
+    // Brand / Communications / PR
+    /\bbrand marketing\b/,
+    /\bbrand manager\b/,
+    /\bbrand strategist\b/,
+    /\bbrand director\b/,
+    /\bcommunications manager\b/,
+    /bmarketing communications\b/,
+    /\bpublic relations\b/,
+    /\bpr manager\b/,
+    /\bpr specialist\b/,
+    /\bmarketing communications manager\b/,
+
+    // Demand Generation / Marketing Ops
+    /\bdemand generation\b/,
+    /\bdemand gen\b/,
+    /\bdemand generation manager\b/,
+    /\bdemand generation specialist\b/,
+    /\bdemand gen manager\b/,
+    /\blifecycle marketing\b/,
+    /\bemail marketing\b/,
+    /\bmarketing operations\b/,
+    /\bmarketing ops\b/,
+    /\bmarketing operations manager\b/,
+    /\bmarketing automation\b/,
+    /\bmarketing automation manager\b/,
+
+    // Partnerships / Field Marketing
+    /\bpartner marketing\b/,
+    /\bpartnerships marketing\b/,
+    /\bchannel marketing\b/,
+    /\bfield marketing\b/,
+    /\bfield marketing manager\b/,
+    /\becosystem marketing\b/,
+
+    // Marketing Leadership
+    /\bchief growth officer\b/,
+    /\bcgo\b/,
+    /\bchief brand officer\b/,
+    /\bmarketing lead\b/,
+    /\bglobal marketing manager\b/,
+    /\binternational marketing manager\b/,
   ];
 
   return !excludedPatterns.some((pattern) => pattern.test(title));
