@@ -17,6 +17,10 @@ function isTargetJob(job) {
     // intern
     /\bintern\b/,
 
+    //operations
+    /\boperations\b/,
+    /\bops\b/,
+
     // Security operations
     /\bsecurity operations\b/,
     /\bsoc engineer\b/,
@@ -53,6 +57,7 @@ function isTargetJob(job) {
     /\bbusiness development\b/,
     /\bbusiness development representative\b/,
     /\bbdr\b/,
+    /\bsales engineer\b/,
     /\baccount executive\b/,
     /\baccount manager\b/,
     /\bsales manager\b/,
@@ -61,16 +66,36 @@ function isTargetJob(job) {
     /\bvp of sales\b/,
     /\bcommercial\b/,
 
+    // Member of Staff
+    /\bmember of staff\b/,
+    /\bmember of technical staff\b/,
+    /\bstaff\b/,
+
+    // Client
+    /\bclient\b/,
+    /\binstallation\b/,
+
+    // Recruiting / Talent Acquisition
+    /\bsourcer\b/,
+    /\brecruiter\b/,
+    /\brecruiting\b/,
+    /\btalent acquisition\b/,
+    /\btechnical recruiter\b/,
+    /\btechnical recruiting\b/,
+    /\btalent sourcer\b/,
+    /\brecruiting manager\b/,
+    /\bhead of recruiting\b/,
+    /\bhead of talent acquisition\b/,
+
     // Marketing titles / keywords
     /\bmarketing\b/,
-    /bmarketing associate\b/,
+    /\bmarketing associate\b/,
     /\bmarketing specialist\b/,
     /\bmarketing coordinator\b/,
     /\bmarketing executive\b/,
     /\bmarketing manager\b/,
     /\bmarketing director\b/,
     /\bhead of marketing\b/,
-    /\bvp of marketing\b/,
     /\bchief marketing officer\b/,
     /\bcmo\b/,
 
@@ -89,7 +114,7 @@ function isTargetJob(job) {
 
     // Digital Marketing
     /\bdigital marketing\b/,
-    /bdigital marketer\b/,
+    /\bdigital marketer\b/,
     /\bdigital marketing specialist\b/,
     /\bdigital marketing manager\b/,
     /\bonline marketing\b/,
@@ -131,7 +156,7 @@ function isTargetJob(job) {
     /\bbrand strategist\b/,
     /\bbrand director\b/,
     /\bcommunications manager\b/,
-    /bmarketing communications\b/,
+    /\bmarketing communications\b/,
     /\bpublic relations\b/,
     /\bpr manager\b/,
     /\bpr specialist\b/,

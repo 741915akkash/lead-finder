@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const { supabase } = require('../db/db');
 
 const { updateExistingJob } = require('../services/update-job');
@@ -14,6 +17,11 @@ const { isTargetJob } = require('../nfilters/title-filter');
 const { isTargetLocation } = require('../nfilters/location-filter');
 const { requiresMoreThanThreeYears } = require('../nfilters/experience-filter');
 const { hasNoVisaSponsorship } = require('../nfilters/visa-filter');
+const { isRecentJob } = require('../nfilters/time-filter');
+
+// ----------------------------------
+// GET COMPANIES
+// ----------------------------------
 
 async function getCompanies() {
   const { data, error } = await supabase
@@ -28,6 +36,38 @@ async function getCompanies() {
 
   return data || [];
 }
+
+// ----------------------------------
+// COMPANY EXCLUSION
+// ----------------------------------
+
+function getTargetCompanies(companies) {
+  const filePath = path.join(__dirname, '../data/company-not-to-take.txt');
+
+  if (!fs.existsSync(filePath)) {
+    return companies;
+  }
+
+  const excludedCompanies = new Set(
+    fs
+      .readFileSync(filePath, 'utf8')
+      .split('\n')
+      .map((line) => line.trim().toLowerCase())
+      .filter((line) => line && !line.startsWith('#')),
+  );
+
+  return companies.filter((company) => {
+    const companyName = (company.name || '').trim().toLowerCase();
+    const domain = (company.domain || '').trim().toLowerCase();
+    const boardName = (company.ats_board_name || '').trim().toLowerCase();
+
+    return !excludedCompanies.has(companyName) && !excludedCompanies.has(domain) && !excludedCompanies.has(boardName);
+  });
+}
+
+// ----------------------------------
+// EXISTING JOBS
+// ----------------------------------
 
 async function getExistingJobs(source, sourceJobIds) {
   if (!sourceJobIds.length) {
@@ -47,6 +87,10 @@ async function getExistingJobs(source, sourceJobIds) {
   return new Set((data || []).map((job) => String(job.source_job_id)));
 }
 
+// ----------------------------------
+// INGEST ONE COMPANY
+// ----------------------------------
+
 async function ingestCompany(company) {
   console.log(`\n======================================`);
   console.log(`Company: ${company.name || company.domain}`);
@@ -57,11 +101,17 @@ async function ingestCompany(company) {
   let rawJobs;
   let source;
 
+  // ----------------------------------
+  // FETCH JOBS
+  // ----------------------------------
+
   if (company.ats === 'ashby') {
     source = 'ashby';
+
     rawJobs = await fetchAshbyJobs(company.ats_board_name);
   } else if (company.ats === 'greenhouse') {
     source = 'greenhouse';
+
     rawJobs = await fetchGreenhouseJobs(company.ats_board_name);
   } else {
     console.log(`⚠ Unsupported ATS: ${company.ats}`);
@@ -78,18 +128,26 @@ async function ingestCompany(company) {
 
   console.log(`Fetched ${rawJobs.length} jobs`);
 
-  // --------------------------------------------------
+  // ----------------------------------
   // HARD FILTERS
-  // --------------------------------------------------
+  // ----------------------------------
 
-  const titleJobs = rawJobs.filter(isTargetJob);
+  // 1. TIME
+  const recentJobs = rawJobs.filter((job) => isRecentJob(job, 14));
+
+  console.log(`After time filter: ${recentJobs.length}`);
+
+  // 2. TITLE
+  const titleJobs = recentJobs.filter(isTargetJob);
 
   console.log(`After title filter: ${titleJobs.length}`);
 
+  // 3. LOCATION
   const locationJobs = titleJobs.filter(isTargetLocation);
 
   console.log(`After location filter: ${locationJobs.length}`);
 
+  // 4. EXPERIENCE
   const experienceJobs = locationJobs.filter((job) => {
     const description = job.descriptionPlain || job.description || job.content || '';
 
@@ -98,6 +156,7 @@ async function ingestCompany(company) {
 
   console.log(`After experience filter: ${experienceJobs.length}`);
 
+  // 5. VISA
   const targetJobs = experienceJobs.filter((job) => {
     const description = job.descriptionPlain || job.description || job.content || '';
 
@@ -106,7 +165,9 @@ async function ingestCompany(company) {
 
   console.log(`After visa filter: ${targetJobs.length}`);
 
-  // --------------------------------------------------
+  // ----------------------------------
+  // NO TARGET JOBS
+  // ----------------------------------
 
   if (!targetJobs.length) {
     console.log('No target jobs found.');
@@ -116,6 +177,8 @@ async function ingestCompany(company) {
       status: 'completed',
       fetched: rawJobs.length,
       target: 0,
+      existing: 0,
+      updated: 0,
       new: 0,
       processed: 0,
     };
@@ -130,6 +193,7 @@ async function ingestCompany(company) {
    * Greenhouse:
    *   source_job_id = normalized source ID
    */
+
   let jobs;
 
   if (company.ats === 'ashby') {
@@ -139,6 +203,10 @@ async function ingestCompany(company) {
   }
 
   const sourceJobIds = jobs.map((job) => String(job.source_job_id));
+
+  // ----------------------------------
+  // EXISTING / NEW
+  // ----------------------------------
 
   const existingIds = await getExistingJobs(source, sourceJobIds);
 
@@ -159,6 +227,7 @@ async function ingestCompany(company) {
   for (const job of existingJobs) {
     try {
       await updateExistingJob(job);
+
       updated += 1;
     } catch (error) {
       updateFailed += 1;
@@ -185,6 +254,10 @@ async function ingestCompany(company) {
 
   console.log(`Inserted and queued: ${processed}`);
 
+  // ----------------------------------
+  // RESULT
+  // ----------------------------------
+
   return {
     company: company.name,
     status: 'completed',
@@ -198,14 +271,24 @@ async function ingestCompany(company) {
   };
 }
 
+// ----------------------------------
+// INGEST ALL COMPANIES
+// ----------------------------------
+
 async function ingestCompanies() {
   const companies = await getCompanies();
 
   console.log(`Found ${companies.length} companies with ATS`);
 
+  const targetCompanies = getTargetCompanies(companies);
+
+  console.log(`Excluded ${companies.length - targetCompanies.length} companies`);
+
+  console.log(`Processing ${targetCompanies.length} companies`);
+
   const results = [];
 
-  for (const company of companies) {
+  for (const company of targetCompanies) {
     try {
       const result = await ingestCompany(company);
 
@@ -222,7 +305,7 @@ async function ingestCompanies() {
   }
 
   return {
-    companies: companies.length,
+    companies: targetCompanies.length,
     results,
   };
 }
