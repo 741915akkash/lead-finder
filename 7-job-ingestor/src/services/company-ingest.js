@@ -38,11 +38,11 @@ async function getCompanies() {
 }
 
 // ----------------------------------
-// COMPANY EXCLUSION
+// DELETE BLACKLISTED COMPANIES
 // ----------------------------------
 
-function getTargetCompanies(companies) {
-  const filePath = path.join(__dirname, '../data/company-not-to-take.txt');
+async function deleteBlacklistedCompanies(companies) {
+  const filePath = path.join(__dirname, '../../data/company-not-to-take.txt');
 
   if (!fs.existsSync(filePath)) {
     return companies;
@@ -56,13 +56,34 @@ function getTargetCompanies(companies) {
       .filter((line) => line && !line.startsWith('#')),
   );
 
-  return companies.filter((company) => {
+  const remainingCompanies = [];
+
+  for (const company of companies) {
     const companyName = (company.name || '').trim().toLowerCase();
     const domain = (company.domain || '').trim().toLowerCase();
     const boardName = (company.ats_board_name || '').trim().toLowerCase();
 
-    return !excludedCompanies.has(companyName) && !excludedCompanies.has(domain) && !excludedCompanies.has(boardName);
-  });
+    const shouldDelete =
+      excludedCompanies.has(companyName) || excludedCompanies.has(domain) || excludedCompanies.has(boardName);
+
+    if (!shouldDelete) {
+      remainingCompanies.push(company);
+      continue;
+    }
+
+    console.log(`🗑 Deleting blacklisted company: ${company.name} | ${company.domain} | ${company.ats_board_name}`);
+
+    const { error } = await supabase.from('companies').delete().eq('id', company.id);
+
+    if (error) {
+      console.error(`✗ Failed to delete ${company.name}:`, error.message);
+
+      // Keep it in the list so ingestion can still report/process it.
+      remainingCompanies.push(company);
+    }
+  }
+
+  return remainingCompanies;
 }
 
 // ----------------------------------
@@ -280,9 +301,7 @@ async function ingestCompanies() {
 
   console.log(`Found ${companies.length} companies with ATS`);
 
-  const targetCompanies = getTargetCompanies(companies);
-
-  console.log(`Excluded ${companies.length - targetCompanies.length} companies`);
+  const targetCompanies = await deleteBlacklistedCompanies(companies);
 
   console.log(`Processing ${targetCompanies.length} companies`);
 
@@ -291,7 +310,6 @@ async function ingestCompanies() {
   for (const company of targetCompanies) {
     try {
       const result = await ingestCompany(company);
-
       results.push(result);
     } catch (error) {
       console.error(`✗ Failed: ${company.name || company.domain}:`, error.message);

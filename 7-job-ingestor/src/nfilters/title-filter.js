@@ -50,7 +50,7 @@ function isTargetJob(job) {
 
     // Sales / Business Development
     /\bsales representative\b/,
-    /\bsales rep\b/,
+    /\bsales\b/,
     /\bsales development\b/,
     /\bsales development representative\b/,
     /\bsdr\b/,
@@ -75,11 +75,49 @@ function isTargetJob(job) {
     /\bclient\b/,
     /\binstallation\b/,
 
+    // Governance / Compliance
+    /\bcompliance\b/,
+    /\bgovernance\b/,
+    /\bregulatory\b/,
+    /\bregulations\b/,
+    /\bpolicy\b/,
+
+    // Managerial / Executive
+    /\bmanager\b/,
+    /\bdirector\b/,
+
+    // Community
+    /\bcommunity\b/,
+
+    // Advocate
+    /\badvocate\b/,
+
+    // Communications
+    /\bcommunication\b/,
+
+    // Customer Success
+    /\bcustomer\b/,
+
+    // Regulatory Affairs
+    /\bregulator\b/,
+
+    // Onboarding
+    /\bonboarding\b/,
+
+    // Field Operator
+    /\bfield\b/,
+    /\boperator\b/,
+
+    // GTM
+    /\bgtm\b/,
+
     // Recruiting / Talent Acquisition
     /\bsourcer\b/,
     /\brecruiter\b/,
     /\brecruiting\b/,
     /\btalent acquisition\b/,
+    /\btalent\b/,
+    /\bsourcing\b/,
     /\btechnical recruiter\b/,
     /\btechnical recruiting\b/,
     /\btalent sourcer\b/,
