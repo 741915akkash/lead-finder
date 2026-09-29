@@ -41,7 +41,7 @@ function close() {
 }
 
 async function archiveJob() {
-  if (!props.job || !archiveNote.value.trim()) {
+  if (!props.job) {
     return;
   }
 
@@ -94,12 +94,9 @@ async function archiveJob() {
       <div class="space-y-6 px-6 py-6">
         <div>
           <div class="mb-2 flex items-center justify-between">
-            <label class="block text-sm font-medium text-gray-800">
-              Why are you archiving this?
-              <span class="text-gray-400">*</span>
-            </label>
+            <label class="block text-sm font-medium text-gray-800"> Why are you archiving this? </label>
 
-            <span class="text-xs text-gray-400"> Required </span>
+            <span class="text-xs text-gray-400"> Optional </span>
           </div>
 
           <textarea
@@ -138,7 +135,7 @@ async function archiveJob() {
         <button
           type="button"
           class="w-full rounded-xl bg-gray-800 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-900 hover:shadow disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="!archiveNote.trim() || archiving"
+          :disabled="archiving"
           @click="archiveJob">
           {{ archiving ? 'Archiving...' : 'Archive job' }}
         </button>
