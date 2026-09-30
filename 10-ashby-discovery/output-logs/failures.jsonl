@@ -1,0 +1,7 @@
+{"stage": "search_discovery:duckduckgo", "target": "https://html.duckduckgo.com/html/?q=site%3Ajobs.ashbyhq.com&s=0", "error": "Search provider challenge/blocked page", "created_at": "2026-09-30T12:04:53.439379"}
+{"stage": "search_discovery:duckduckgo", "target": "https://lite.duckduckgo.com/lite/?q=site%3Ajobs.ashbyhq.com&s=0", "error": "Search provider challenge/blocked page", "created_at": "2026-09-30T12:04:53.717977"}
+{"stage": "search_discovery:brave", "target": "https://search.brave.com/search?q=site%3Ajobs.ashbyhq.com&offset=0&source=web", "error": "Search provider challenge/blocked page", "created_at": "2026-09-30T12:04:59.841518"}
+{"stage": "search_discovery:yahoo", "target": "https://search.yahoo.com/search?p=%22jobs.ashbyhq.com%22+%22careers%22&b=41", "error": "HTTP 500", "created_at": "2026-09-30T12:05:16.643091"}
+{"stage": "source_scan", "target": "https://s.yimg.com/pv/static/img/voiceSearch1x-1620383531565.min.png);background-repeat:no-repeat;background-size:initial;color:transparent}@media", "error": "HTTP 404", "created_at": "2026-09-30T12:05:26.200745"}
+{"stage": "source_scan", "target": "https://s.yimg.com/pv/static/img/voiceSearch2x-1620383531565.min.png)}}.permission-guide{height:100%;width:100%;padding:0;opacity:.9;background-color:#fff;left:0;overflow:hidden;position:fixed;text-align:left;top:0;z-index:10000;transition:visibility", "error": "HTTP 400", "created_at": "2026-09-30T12:05:26.200911"}
+{"stage": "source_scan", "target": "https://s.yimg.com/zz/combo?", "error": "HTTP 400", "created_at": "2026-09-30T12:05:26.201138"}

@@ -1,0 +1,29 @@
+[
+  {
+    "slug": "jobs",
+    "inferred_company_name": "Dusty Jobs",
+    "ashby_url": "https://jobs.ashbyhq.com/jobs",
+    "source_type": "embedded_careers_page",
+    "source_url": "https://apify.com",
+    "verification_status": "VERIFIED",
+    "notes": "Strong Ashby board indicators detected (score=6, negatives=0)"
+  },
+  {
+    "slug": "safe",
+    "inferred_company_name": "Safe Software Jobs",
+    "ashby_url": "https://jobs.ashbyhq.com/safe",
+    "source_type": "embedded_careers_page",
+    "source_url": "https://www.ycombinator.com",
+    "verification_status": "VERIFIED",
+    "notes": "Strong Ashby board indicators detected (score=6, negatives=1)"
+  },
+  {
+    "slug": "story",
+    "inferred_company_name": "Story Inc. Jobs",
+    "ashby_url": "https://jobs.ashbyhq.com/story",
+    "source_type": "embedded_careers_page",
+    "source_url": "https://www.ashbyhq.com",
+    "verification_status": "VERIFIED",
+    "notes": "Strong Ashby board indicators detected (score=6, negatives=0)"
+  }
+]

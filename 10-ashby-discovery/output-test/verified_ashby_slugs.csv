@@ -1,0 +1,4 @@
+slug,inferred_company_name,ashby_url,source_type,source_url,verification_status,notes
+jobs,Dusty Jobs,https://jobs.ashbyhq.com/jobs,embedded_careers_page,https://apify.com,VERIFIED,"Strong Ashby board indicators detected (score=6, negatives=0)"
+safe,Safe Software Jobs,https://jobs.ashbyhq.com/safe,embedded_careers_page,https://www.ycombinator.com,VERIFIED,"Strong Ashby board indicators detected (score=6, negatives=1)"
+story,Story Inc. Jobs,https://jobs.ashbyhq.com/story,embedded_careers_page,https://www.ashbyhq.com,VERIFIED,"Strong Ashby board indicators detected (score=6, negatives=0)"
