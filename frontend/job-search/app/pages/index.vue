@@ -11,6 +11,8 @@ const status = ref('');
 
 const recommendation = ref('');
 
+const applied = ref(false);
+
 const page = ref(1);
 
 const pageSize = ref(50);
@@ -33,6 +35,7 @@ const { data, pending, error, refresh } = await useFetch('/api/jobs', {
     source,
     status,
     recommendation,
+    applied,
     days,
   },
 });
@@ -47,7 +50,7 @@ function handleSort(column) {
   }
 }
 
-watch([search, source, status, recommendation, days], () => {
+watch([search, source, status, recommendation, applied, days], () => {
   page.value = 1;
 });
 
@@ -67,6 +70,7 @@ async function handleApplicationSaved() {
         v-model:source="source"
         v-model:status="status"
         v-model:recommendation="recommendation"
+        v-model:applied="applied"
         v-model:days="days" />
 
       <Pagination v-model:page="page" :total-pages="data?.totalPages || 1" />

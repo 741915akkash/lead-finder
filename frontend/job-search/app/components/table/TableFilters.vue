@@ -3,6 +3,7 @@ const search = defineModel('search');
 const source = defineModel('source');
 const status = defineModel('status');
 const recommendation = defineModel('recommendation');
+const applied = defineModel('applied');
 const days = defineModel('days');
 
 defineProps({
@@ -39,5 +40,12 @@ defineProps({
     </select>
 
     <input v-model.number="days" type="number" min="1" placeholder="Days" class="w-24 rounded-lg border px-3 py-2" />
+
+    <button
+      type="button"
+      class="rounded-lg border px-4 py-2 font-medium bg-white text-gray-700 hover:bg-gray-50"
+      @click="applied = !applied">
+      {{ applied ? 'Un Applied' : 'Applied' }}
+    </button>
   </div>
 </template>

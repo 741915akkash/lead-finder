@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
 
   const status = query.status || '';
 
+  const applied = query.applied === 'true';
+
   const recommendation = query.recommendation || '';
 
   const days = Number(query.days || 30);
@@ -32,6 +34,19 @@ export default defineEventHandler(async (event) => {
   cutoff.setDate(cutoff.getDate() - days);
 
   const supabase = getSupabase();
+
+  const { data: applicationJobs, error: applicationJobsError } = await supabase
+    .from('applications')
+    .select('job_posting_id');
+
+  if (applicationJobsError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: applicationJobsError.message,
+    });
+  }
+
+  const applicationJobIds = [...new Set((applicationJobs || []).map((row) => row.job_posting_id).filter(Boolean))];
 
   let db = supabase
     .from('job_postings')
@@ -77,6 +92,23 @@ export default defineEventHandler(async (event) => {
 
   if (recommendation) {
     db = db.eq('recommendation', recommendation);
+  }
+
+  if (applied) {
+    if (!applicationJobIds.length) {
+      return {
+        page,
+        pageSize,
+        total: 0,
+        totalPages: 0,
+        rows: [],
+        days,
+      };
+    }
+
+    db = db.in('id', applicationJobIds);
+  } else if (applicationJobIds.length) {
+    db = db.not('id', 'in', `(${applicationJobIds.join(',')})`);
   }
 
   const { data, count, error } = await db
