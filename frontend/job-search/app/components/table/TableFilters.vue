@@ -23,22 +23,6 @@ defineProps({
       </option>
     </select>
 
-    <select v-model="recommendation" class="rounded-lg border px-3 py-2">
-      <option value="">All Recommendations</option>
-
-      <option v-for="item in filters?.recommendations" :key="item" :value="item">
-        {{ item }}
-      </option>
-    </select>
-
-    <select v-model="status" class="rounded-lg border px-3 py-2">
-      <option value="">All Statuses</option>
-
-      <option v-for="item in filters?.statuses" :key="item" :value="item">
-        {{ item }}
-      </option>
-    </select>
-
     <input v-model.number="days" type="number" min="1" placeholder="Days" class="w-24 rounded-lg border px-3 py-2" />
 
     <button
