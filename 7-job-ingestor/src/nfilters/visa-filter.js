@@ -3,7 +3,7 @@ function hasNoVisaSponsorship(description) {
     return false;
   }
 
-  return /no visa sponsorship available/i.test(description);
+  return /no visa sponsorship available|must be a us citizen/i.test(description);
 }
 
 module.exports = {
