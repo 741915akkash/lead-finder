@@ -67,6 +67,12 @@ function isIndiaRemote(job) {
   return remote && india;
 }
 
+function isLondon(job) {
+  const text = getLocationText(job);
+
+  return /\blondon\b/i.test(text);
+}
+
 function isUSRemote(job) {
   const text = getLocationText(job);
 
@@ -90,6 +96,10 @@ function getJobLocationTypes(job) {
 
   if (isSanFranciscoBayArea(job)) {
     locations.push('sf_bay_area');
+  }
+
+  if (isLondon(job)) {
+    locations.push('london');
   }
 
   if (isIndiaRemote(job)) {
