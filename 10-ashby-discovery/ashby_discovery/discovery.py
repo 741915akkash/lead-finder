@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import asyncio
+import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-import sys
-from typing import Any, Iterable, Optional
+from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
 
 from bs4 import BeautifulSoup
+
 try:
-    from tqdm.auto import tqdm
+    from tqdm.auto import tqdm  # type: ignore
 except Exception:  # pragma: no cover
+
     class tqdm:  # type: ignore[no-redef]
         def __init__(self, *_args: Any, **_kwargs: Any) -> None:
             return
@@ -20,6 +23,7 @@ except Exception:  # pragma: no cover
 
         def close(self) -> None:
             return
+
 
 from .extractors import extract_slug, extract_slugs_from_html, has_embed_marker
 from .http_client import AsyncFetcher
@@ -36,7 +40,7 @@ from .storage import DiscoveryStore
 from .utils import extract_urls_from_text, maybe_unwrap_search_redirect, uniq
 
 FALLBACK_SEARCH_QUERIES = [
-    'site:jobs.ashbyhq.com',
+    "site:jobs.ashbyhq.com",
     '"jobs.ashbyhq.com" careers',
     '"jobs.ashbyhq.com" "software engineer"',
     '"jobs.ashbyhq.com" "embed?version=2"',
@@ -62,10 +66,10 @@ class DiscoverySummary:
 @dataclass
 class ProviderSearchResult:
     urls: list[str]
-    blocked_reason: Optional[str] = None  # e.g. "rate_limited", "challenge"
+    blocked_reason: str | None = None  # e.g. "rate_limited", "challenge"
 
 
-def load_company_seeds(path: Optional[Path]) -> list[str]:
+def load_company_seeds(path: Path | None) -> list[str]:
     if path is None:
         return []
     if not path.exists():
@@ -80,7 +84,7 @@ def load_company_seeds(path: Optional[Path]) -> list[str]:
     return uniq(seeds)
 
 
-def load_search_queries(path: Optional[Path] = None) -> list[str]:
+def load_search_queries(path: Path | None = None) -> list[str]:
     target = path if path is not None else DEFAULT_SEARCH_QUERIES_FILE
     if target is not None and not target.exists() and path is None:
         # Root-level query file is optional; fall back to in-code defaults.
@@ -113,7 +117,7 @@ def expand_company_seed(seed: str) -> list[str]:
     return uniq([base] + [f"{base}{path}" for path in CAREER_PATH_HINTS])
 
 
-def normalize_search_engines(engines: Optional[Iterable[str]]) -> list[str]:
+def normalize_search_engines(engines: Iterable[str] | None) -> list[str]:
     if engines is None:
         return list(DEFAULT_SEARCH_ENGINES)
 
@@ -189,17 +193,17 @@ async def _search_provider(
     *,
     engine: str,
     pages: int = 5,
-    store: Optional[DiscoveryStore] = None,
+    store: DiscoveryStore | None = None,
     verbose: bool = False,
-    progress: Optional[Any] = None,
+    progress: Any | None = None,
 ) -> ProviderSearchResult:
     discovered: list[str] = []
-    provider_blocked_reason: Optional[str] = None
+    provider_blocked_reason: str | None = None
     attempted_pages = 0
     for page_idx in range(pages):
         attempted_pages = page_idx + 1
         candidate_urls = search_urls_for(engine, query, page_idx)
-        page_blocked_reason: Optional[str] = None
+        page_blocked_reason: str | None = None
         page_success = False
         try:
             for url in candidate_urls:
@@ -265,10 +269,10 @@ async def discover_from_search(
     max_results: int,
     *,
     search_pages_per_query: int,
-    search_engines: Optional[Iterable[str]] = None,
-    search_queries_file: Optional[Path] = None,
-    store: Optional[DiscoveryStore] = None,
-    queries: Optional[list[str]] = None,
+    search_engines: Iterable[str] | None = None,
+    search_queries_file: Path | None = None,
+    store: DiscoveryStore | None = None,
+    queries: list[str] | None = None,
     verbose: bool = False,
     show_progress: bool = True,
 ) -> list[str]:
@@ -389,7 +393,7 @@ async def scan_source_page(
     fetcher: AsyncFetcher,
     source_url: str,
     source_type: str,
-) -> tuple[list[CandidateSlug], Optional[str]]:
+) -> tuple[list[CandidateSlug], str | None]:
     try:
         page = await fetcher.fetch(source_url)
     except Exception as exc:  # noqa: BLE001
@@ -421,10 +425,10 @@ async def discover_candidates(
     store: DiscoveryStore,
     *,
     max_results: int,
-    input_company_list: Optional[Path],
+    input_company_list: Path | None,
     search_pages_per_query: int = 5,
-    search_engines: Optional[Iterable[str]] = None,
-    search_queries_file: Optional[Path] = None,
+    search_engines: Iterable[str] | None = None,
+    search_queries_file: Path | None = None,
     source_scan_batch_size: int = 30,
     verbose: bool = False,
     show_progress: bool = True,

@@ -8,11 +8,7 @@ from pathlib import Path
 from .config import RunConfig
 from .pipeline import run_pipeline
 
-DEFAULT_USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/123.0.0.0 Safari/537.36"
-)
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -32,8 +28,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("output"),
         help="Directory for CSV/JSON output and state",
     )
-    parser.add_argument("--db-path", type=Path, default=None, help="SQLite DB path for resume/cache state")
-    parser.add_argument("--resume", action="store_true", help="Resume from existing SQLite state if available")
+    parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=None,
+        help="SQLite DB path for resume/cache state",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from existing SQLite state if available",
+    )
     parser.add_argument(
         "--search-pages-per-query",
         type=int,
@@ -66,7 +71,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.25,
         help="Minimum delay between requests (seconds)",
     )
-    parser.add_argument("--max-connections", type=int, default=20, help="Max concurrent HTTP connections")
+    parser.add_argument(
+        "--max-connections",
+        type=int,
+        default=20,
+        help="Max concurrent HTTP connections",
+    )
     parser.add_argument(
         "--user-agent",
         type=str,
@@ -155,14 +165,8 @@ def main() -> None:
     print(f"- Source pages scanned: {summary['discovery']['source_pages_scanned']}")
     print(f"- Slugs verified: {summary['verification']['verified']} / {summary['verification']['processed']}")
     if args.resume:
-        print(
-            f"- Rows exported (cumulative): {summary['output']['rows_written']} "
-            f"(this run: {summary['run_counts']['rows_written']})"
-        )
-        print(
-            f"- Failures recorded (cumulative): {summary['store_counts']['failures']} "
-            f"(this run: {summary['run_counts']['failures']})"
-        )
+        print(f"- Rows exported (cumulative): {summary['output']['rows_written']} (this run: {summary['run_counts']['rows_written']})")
+        print(f"- Failures recorded (cumulative): {summary['store_counts']['failures']} (this run: {summary['run_counts']['failures']})")
     else:
         print(f"- Rows exported: {summary['output']['rows_written']}")
         print(f"- Failures recorded: {summary['store_counts']['failures']}")

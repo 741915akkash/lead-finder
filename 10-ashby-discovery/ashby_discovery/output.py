@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 
-def save_results(rows: Iterable[dict], output_dir: Path, *, base_name: str = "verified_ashby_slugs") -> tuple[Path, Path]:
+def save_results(
+    rows: Iterable[dict], output_dir: Path, *, base_name: str = "verified_ashby_slugs"
+) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     rows_list = rows if isinstance(rows, list) else list(rows)
 
@@ -35,7 +37,9 @@ def save_results(rows: Iterable[dict], output_dir: Path, *, base_name: str = "ve
     return csv_path, json_path
 
 
-def save_failures(failures: list[dict], output_dir: Path, *, filename: str = "failures.jsonl") -> Path:
+def save_failures(
+    failures: list[dict], output_dir: Path, *, filename: str = "failures.jsonl"
+) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     target = output_dir / filename
     with target.open("w", encoding="utf-8") as fh:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -19,9 +18,9 @@ class VerificationResult:
     slug: str
     ashby_url: str
     verification_status: str
-    inferred_company_name: Optional[str] = None
+    inferred_company_name: str | None = None
     notes: str = ""
-    http_status: Optional[int] = None
+    http_status: int | None = None
     checked_at: datetime = field(default_factory=datetime.utcnow)
 
 

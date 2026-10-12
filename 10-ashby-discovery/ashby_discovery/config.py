@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Sequence
 
 
 @dataclass
@@ -10,11 +10,11 @@ class RunConfig:
     output_dir: Path
     db_path: Path
     max_results: int = 500
-    input_company_list: Optional[Path] = None
+    input_company_list: Path | None = None
     resume: bool = False
     search_pages_per_query: int = 5
     search_engines: Sequence[str] = ("duckduckgo", "brave", "yahoo")
-    search_queries_file: Optional[Path] = None
+    search_queries_file: Path | None = None
     source_scan_batch_size: int = 25
     timeout_seconds: float = 15.0
     retries: int = 3
@@ -24,8 +24,4 @@ class RunConfig:
     verified_only: bool = True
     verbose: bool = False
     show_progress: bool = True
-    user_agent: str = (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/123.0.0.0 Safari/537.36"
-    )
+    user_agent: str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
