@@ -13,12 +13,13 @@ const TECHNOLOGY_REGISTRY = {
 
   'Express.js': ['express.js', 'expressjs', 'express'],
 
-  'REST APIs': [
-    'rest api',
-    'rest apis',
-    'restful api',
-    'restful apis',
-  ],
+  'REST APIs': ['rest api', 'rest apis', 'restful api', 'restful apis'],
+
+  // Java ecosystem
+
+  Java: ['java', 'java programming', 'java developer'],
+
+  'Spring Boot': ['spring boot', 'springboot'],
 
   // Databases
 
@@ -32,10 +33,7 @@ const TECHNOLOGY_REGISTRY = {
 
   // AI / LLM
 
-  'OpenAI API': [
-    'openai api',
-    'openai apis',
-  ],
+  'OpenAI API': ['openai api', 'openai apis'],
 
   Ollama: ['ollama'],
 
@@ -51,35 +49,19 @@ const TECHNOLOGY_REGISTRY = {
     'ai/llm apis',
   ],
 
-  RAG: [
-    'rag',
-    'retrieval augmented generation',
-    'retrieval-augmented generation',
-  ],
+  RAG: ['rag', 'retrieval augmented generation', 'retrieval-augmented generation'],
 
-  'Vector databases': [
-    'vector database',
-    'vector databases',
-  ],
+  'Vector databases': ['vector database', 'vector databases'],
 
   pgvector: ['pgvector'],
 
-  'AI agents': [
-    'ai agent',
-    'ai agents',
-  ],
+  'AI agents': ['ai agent', 'ai agents'],
 
-  Embeddings: [
-    'embedding',
-    'embeddings',
-  ],
+  Embeddings: ['embedding', 'embeddings'],
 
   // Infrastructure / deployment
 
-  AWS: [
-    'aws',
-    'amazon web services',
-  ],
+  AWS: ['aws', 'amazon web services'],
 
   Docker: ['docker'],
 
@@ -102,25 +84,15 @@ const TECHNOLOGY_REGISTRY = {
 
   React: ['react'],
 
-  'Next.js': [
-    'next.js',
-    'nextjs',
-    'next',
-  ],
+  'Next.js': ['next.js', 'nextjs', 'next'],
 
-  TypeScript: [
-    'typescript',
-    'ts',
-  ],
+  TypeScript: ['typescript', 'ts'],
 
   Python: ['python'],
 
   FastAPI: ['fastapi'],
 
-  Kubernetes: [
-    'kubernetes',
-    'k8s',
-  ],
+  Kubernetes: ['kubernetes', 'k8s'],
 
   Celery: ['celery'],
 
@@ -136,10 +108,7 @@ const TECHNOLOGY_REGISTRY = {
 
   'React Flow': ['react flow'],
 
-  D3: [
-    'd3.js',
-    'd3',
-  ],
+  D3: ['d3.js', 'd3'],
 
   WebGL: ['webgl'],
 };
