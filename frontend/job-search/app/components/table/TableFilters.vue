@@ -16,11 +16,8 @@ defineProps({
     <input v-model="search" placeholder="Search jobs..." class="rounded-lg border px-3 py-2" />
 
     <select v-model="source" class="rounded-lg border px-3 py-2">
-      <option value="">All Sources</option>
-
-      <option v-for="item in filters?.sources" :key="item" :value="item">
-        {{ item }}
-      </option>
+      <option value="ashby">ashby</option>
+      <option value="wellfound">wellfound</option>
     </select>
 
     <input v-model.number="days" type="number" min="1" placeholder="Days" class="w-24 rounded-lg border px-3 py-2" />
