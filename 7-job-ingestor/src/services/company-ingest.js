@@ -3,6 +3,8 @@ const path = require('path');
 
 const { supabase } = require('../db/db');
 
+const ALL_TITLES_FILE = path.join(__dirname, '../../data/all-job-titles.txt');
+
 const { updateExistingJob } = require('../services/update-job');
 
 const { fetchJobs: fetchGreenhouseJobs } = require('../sources/greenhouse/fetch-jobs');
@@ -18,6 +20,19 @@ const { isTargetLocation } = require('../nfilters/location-filter');
 const { requiresMoreThanThreeYears } = require('../nfilters/experience-filter');
 const { hasNoVisaSponsorship } = require('../nfilters/visa-filter');
 const { isRecentJob } = require('../nfilters/time-filter');
+
+function saveJobTitles(jobs) {
+  const titles = jobs
+    .map((job) => job?.title)
+    .filter(Boolean)
+    .map((title) => title.trim());
+
+  if (!titles.length) {
+    return;
+  }
+
+  fs.appendFileSync(ALL_TITLES_FILE, titles.join('\n') + '\n', 'utf8');
+}
 
 // ----------------------------------
 // GET COMPANIES
@@ -129,11 +144,11 @@ async function ingestCompany(company) {
   if (company.ats === 'ashby') {
     source = 'ashby';
 
-    rawJobs = await fetchAshbyJobs(company.ats_board_name);
+    rawJobs = await fetchAshbyJobs(company.ats_url);
   } else if (company.ats === 'greenhouse') {
     source = 'greenhouse';
 
-    rawJobs = await fetchGreenhouseJobs(company.ats_board_name);
+    rawJobs = await fetchGreenhouseJobs(company.ats_url);
   } else {
     console.log(`⚠ Unsupported ATS: ${company.ats}`);
 
@@ -148,6 +163,8 @@ async function ingestCompany(company) {
   }
 
   console.log(`Fetched ${rawJobs.length} jobs`);
+
+  saveJobTitles(rawJobs);
 
   // ----------------------------------
   // HARD FILTERS

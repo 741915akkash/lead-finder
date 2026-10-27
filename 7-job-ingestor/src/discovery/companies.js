@@ -3,9 +3,8 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-const { discoverCareerPage } = require('./discover-career-page');
-const { upsertCompany, updateCompanyATS } = require('../services/company');
-const { supabase } = require('../db/db');
+const { tryAts } = require('./try-ats');
+const { registerCompany } = require('../services/company');
 
 const CAREER_PAGES_FILE = path.join(__dirname, '../../data/career-pages.txt');
 
@@ -25,61 +24,53 @@ function readCareerPages() {
   ];
 }
 
-async function getExistingCareerUrls() {
-  const { data, error } = await supabase.from('companies').select('career_url');
-
-  if (error) {
-    throw error;
-  }
-
-  return new Set((data || []).map((company) => company.career_url));
-}
-
 async function discoverCompanies() {
   const careerPages = readCareerPages();
 
   console.log(`Found ${careerPages.length} career pages`);
 
-  const existingUrls = await getExistingCareerUrls();
-
-  let skipped = 0;
   let discovered = 0;
   let failed = 0;
 
   for (const careerUrl of careerPages) {
-    if (existingUrls.has(careerUrl)) {
-      console.log(`✓ Already registered: ${careerUrl}`);
-      skipped += 1;
-      continue;
-    }
-
     console.log('\n======================================');
-    console.log(`New career page: ${careerUrl}`);
+    console.log(`Processing: ${careerUrl}`);
     console.log('======================================');
 
     try {
-      const company = await upsertCompany(careerUrl);
+      /*
+       * tryAts handles:
+       *
+       * 1. Direct ATS URLs
+       * 2. Existing career-page discovery
+       * 3. Predictable ATS URL probing
+       */
+      const result = await tryAts(careerUrl);
+
+      console.log('ATS result:');
+      console.log(result);
+
+      /*
+       * Register or update the company.
+       */
+      const company = await registerCompany({
+        careerUrl,
+        atsUrl: result.ats?.atsUrl || null,
+        ats: result.ats?.ats || null,
+        boardName: result.ats?.boardName || null,
+        discoverySource: 'career-page',
+        atsStatus: result.status,
+      });
 
       console.log(`✓ Company registered: ${company.name} (${company.domain})`);
 
-      const result = await discoverCareerPage(careerUrl);
-
-      if (!result) {
-        console.log('✗ No supported ATS found');
-        discovered += 1;
-        existingUrls.add(careerUrl);
-        continue;
+      if (result.status === 'detected') {
+        console.log(`✓ ATS detected: ${result.ats.ats} → ${result.ats.atsUrl}`);
+      } else if (result.status === 'manual') {
+        console.log('✓ No supported ATS found');
       }
 
-      console.log('✓ ATS discovered:');
-      console.log(result);
-
-      const updatedCompany = await updateCompanyATS(company.id, result);
-
-      console.log(`✓ Company updated: ${updatedCompany.name} → ${updatedCompany.ats}`);
-
       discovered += 1;
-      existingUrls.add(careerUrl);
     } catch (error) {
       console.error(`✗ Discovery failed: ${careerUrl}`, error.message);
 
@@ -90,7 +81,6 @@ async function discoverCompanies() {
   return {
     total: careerPages.length,
     discovered,
-    skipped,
     failed,
   };
 }
@@ -108,5 +98,6 @@ async function main() {
 
 main().catch((err) => {
   console.error('Company discovery failed:', err);
+
   process.exit(1);
 });
